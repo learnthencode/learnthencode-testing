@@ -1,23 +1,30 @@
 import { load } from "cheerio";
-import { createResult } from "./results.js";
-import { elementExists } from "../assertions/elements.js";
+import { assertions } from "../assertions/index.js";
 
-export function executeRequirement(requirement, html) {
+
+export function executeRequirement(
+  requirement,
+  html
+) {
   const $ = load(html);
+
 
   const { check } = requirement;
 
-  switch (check.type) {
-    case "element":
-      return elementExists($, requirement);
 
-    default:
-      return createResult(
-        requirement,
-        passed,
-        {
-          message,
-        }
-      );
+  const assertion =
+    assertions[check.type];
+
+
+  if (!assertion) {
+    throw new Error(
+      `Unsupported assertion type: ${check.type}`
+    );
   }
+
+
+  return assertion(
+    $,
+    requirement
+  );
 }

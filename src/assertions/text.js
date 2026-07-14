@@ -2,13 +2,13 @@ import { expect } from "./expect.js";
 
 
 /**
- * Checks whether an element contains an attribute.
+ * Checks whether an element contains specific text.
  *
  * @param {CheerioAPI} $
  * @param {object} requirement
  * @returns {object}
  */
-export function attributeExists($, requirement) {
+export function textContains($, requirement) {
 
   const {
     check,
@@ -19,9 +19,14 @@ export function attributeExists($, requirement) {
     $(check.selector);
 
 
+  const text =
+    element.text().trim();
+
+
   const exists =
-    element.length > 0 &&
-    element.attr(check.attribute) !== undefined;
+    text.includes(
+      check.contains
+    );
 
 
   return expect({
@@ -30,6 +35,6 @@ export function attributeExists($, requirement) {
     condition: exists,
 
     message:
-      `Could not find ${check.attribute} attribute on ${check.selector} element.`,
+      `Expected ${check.selector} to contain "${check.contains}".`,
   });
 }

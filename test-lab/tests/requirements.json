@@ -2,18 +2,51 @@
   "version": 1,
   "lesson": "02-html-fundamentals",
   "lab": "headings",
-
   "requirements": [
     {
       "id": "html-001",
       "name": "Page contains a heading",
       "description": "The page should contain one h1 element.",
       "points": 5,
-      "hint": "Use an <h1> element.",
-
+      "hint": "Add an h1 element to your page.",
       "check": {
         "type": "element",
         "selector": "h1"
+      }
+    },
+    {
+      "id": "html-002",
+      "name": "Images have alternative text",
+      "description": "Images must contain alt attributes.",
+      "points": 5,
+      "hint": "Add an alt attribute to your image.",
+      "check": {
+        "type": "attribute",
+        "selector": "img",
+        "attribute": "alt"
+      }
+    },
+    {
+      "id": "html-003",
+      "name": "Page uses semantic main element",
+      "description": "The page should contain a main element.",
+      "points": 5,
+      "hint": "Use semantic HTML elements instead of generic containers.",
+      "check": {
+        "type": "semantic",
+        "selector": "main"
+      }
+    },
+    {
+      "id": "html-004",
+      "name": "Heading contains correct text",
+      "description": "The heading should introduce LearnThenCode.",
+      "points": 5,
+      "hint": "Update the heading text.",
+      "check": {
+        "type": "text",
+        "selector": "h1",
+        "contains": "LearnThenCode"
       }
     }
   ]
