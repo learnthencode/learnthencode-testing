@@ -1,5 +1,6 @@
 import { expect } from "./expect.js";
 
+
 /**
  * Checks whether an HTML element exists.
  *
@@ -8,14 +9,18 @@ import { expect } from "./expect.js";
  * @returns {object}
  */
 export function elementExists($, requirement) {
-  const { name, check } = requirement;
+  const { check } = requirement;
+
 
   const exists = $(check.selector).length > 0;
 
+
   return expect({
-    name,
+    requirement,
+
     condition: exists,
-    message: `Could not find ${check.selector} element.`,
-    hint: `Add a ${check.selector} element to your page.`,
+
+    message:
+      `Could not find ${check.selector} element.`,
   });
 }

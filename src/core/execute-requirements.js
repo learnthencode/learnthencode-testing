@@ -12,11 +12,12 @@ export function executeRequirement(requirement, html) {
       return elementExists($, requirement);
 
     default:
-      return createResult({
-        name: requirement.name,
-        passed: false,
-        message: `Unsupported requirement type: ${check.type}`,
-        hint: "Ask your instructor for guidance.",
-      });
+      return createResult(
+        requirement,
+        passed,
+        {
+          message,
+        }
+      );
   }
 }

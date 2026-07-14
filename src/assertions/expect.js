@@ -8,19 +8,36 @@ import { createResult } from "../core/results.js";
  * @returns {object}
  */
 export function expect({
-  name,
+  requirement,
   condition,
-  message,
-  hint,
+  message = "",
 }) {
   return createResult({
-    name,
+    id: requirement.id,
+
+    name: requirement.name,
+
+    description:
+      requirement.description,
+
     passed: condition,
-    message: condition
-      ? ""
-      : message,
-    hint: condition
-      ? ""
-      : hint,
+
+    points:
+      requirement.points ?? 0,
+
+    earned:
+      condition
+        ? requirement.points ?? 0
+        : 0,
+
+    message:
+      condition
+        ? ""
+        : message,
+
+    hint:
+      condition
+        ? ""
+        : requirement.hint ?? "",
   });
 }

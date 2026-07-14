@@ -10,6 +10,7 @@
       "description": "The page should contain one h1 element.",
       "points": 5,
       "hint": "Use an <h1> element.",
+
       "check": {
         "type": "element",
         "selector": "h1"

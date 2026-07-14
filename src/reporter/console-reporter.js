@@ -4,61 +4,85 @@ import { success, error } from "./colors.js";
 /**
  * Reports test execution results.
  *
- * @param {Array} results
+ * @param {object} resultCollection
  */
-export function report(results) {
-  console.log("");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log(" LearnThenCode Test ");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("");
+export function report(resultCollection) {
 
-  let passed = 0;
-  let failed = 0;
+    const results = resultCollection.results;
 
+    const reportSummary = resultCollection.summary();
 
-  for (const result of results) {
-
-    if (result.passed) {
-      passed++;
-
-      console.log(
-        `${success("✔")} ${result.name}`
-      );
-
-    } else {
-      failed++;
-
-      console.log(
-        `${error("✘")} ${result.name}`
-      );
-
-      if (result.message) {
-        console.log(
-          `  ${result.message}`
-        );
-      }
-
-      if (result.hint) {
-        console.log(
-          `  Hint: ${result.hint}`
-        );
-      }
-    }
 
     console.log("");
-  }
+
+    console.log(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    );
+
+    console.log(
+        " LearnThenCode Test "
+    );
+
+    console.log(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    );
+
+    console.log("");
 
 
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    for (const result of results) {
 
-  console.log(
-    `Passed: ${passed}`
-  );
+        if (result.passed) {
 
-  console.log(
-    `Failed: ${failed}`
-  );
+            console.log(
+                `${success("✔")} ${result.name}`
+            );
 
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        } else {
+
+            console.log(
+                `${error("✘")} ${result.name}`
+            );
+
+
+            if (result.message) {
+                console.log(
+                    `  ${result.message}`
+                );
+            }
+
+
+            if (result.hint) {
+                console.log(
+                    `  Hint: ${result.hint}`
+                );
+            }
+        }
+
+
+        console.log("");
+    }
+
+
+    console.log(
+        `Passed: ${reportSummary.passed}`
+    );
+
+
+    console.log(
+        `Failed: ${reportSummary.failed}`
+    );
+
+
+    console.log("");
+
+
+    console.log(
+        `Score: ${reportSummary.earned}/${reportSummary.points}`
+    );
+
+
+    console.log(
+        `Percentage: ${reportSummary.percentage}%`
+    );
 }
