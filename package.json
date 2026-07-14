@@ -1,12 +1,23 @@
 {
   "name": "learnthencode-testing",
   "version": "1.0.0",
-  "description": "",
+  "description": "A lightweight testing framework for the LearnThenCode Full Stack Software Engineering Bootcamp.",
+  "type": "module",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "bin": {
+    "learnthencode-test": "./bin/learnthencode-test.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "scripts": {
+    "test": "node ./bin/learnthencode-test.js"
+  },
+  "keywords": [
+    "learnthencode",
+    "testing",
+    "education",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "Yahya Mohamed",
+  "license": "MIT"
 }
