@@ -16,6 +16,22 @@
         "selector": "h1",
         "equals": 1
       }
+    },
+    {
+      "id": "html-002",
+      "category": "HTML",
+      "topic": "Navigation Structure",
+      "difficulty": "beginner",
+      "learningObjective": "Create correctly nested navigation links.",
+      "estimatedTime": 5,
+      "name": "Navigation contains correctly nested links",
+      "description": "Navigation links should be placed inside a list within the nav element.",
+      "hint": "Use the structure nav > ul > li > a.",
+      "points": 5,
+      "check": {
+        "type": "structure",
+        "selector": "nav > ul > li > a"
+      }
     }
   ]
 }
