@@ -2,7 +2,7 @@ import { expect } from "./expect.js";
 
 
 /**
- * Checks whether a semantic HTML element exists.
+ * Checks whether semantic HTML elements exist.
  *
  * @param {CheerioAPI} $
  * @param {object} requirement
@@ -15,16 +15,69 @@ export function semanticExists($, requirement) {
   } = requirement;
 
 
-  const exists =
-    $(check.selector).length > 0;
+  let passed = false;
+  let message = "";
+
+
+  /*
+   * Single semantic element check
+   *
+   * Example:
+   * {
+   *   "selector": "main"
+   * }
+   */
+  if ("selector" in check) {
+
+    const exists =
+      $(check.selector).length > 0;
+
+
+    passed = exists;
+
+
+    message =
+      `Could not find semantic ${check.selector} element.`;
+
+  }
+
+
+  /*
+   * Multiple semantic element check
+   *
+   * Example:
+   * {
+   *   "elements": [
+   *      "header",
+   *      "main",
+   *      "footer"
+   *   ]
+   * }
+   */
+  if ("elements" in check) {
+
+    const missing =
+      check.elements.filter(
+        (element) =>
+          $(element).length === 0
+      );
+
+
+    passed =
+      missing.length === 0;
+
+
+    message =
+      `Missing semantic elements: ${missing.join(", ")}.`;
+
+  }
 
 
   return expect({
     requirement,
 
-    condition: exists,
+    condition: passed,
 
-    message:
-      `Could not find semantic ${check.selector} element.`,
+    message,
   });
 }

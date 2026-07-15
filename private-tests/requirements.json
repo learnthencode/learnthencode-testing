@@ -1,13 +1,15 @@
 {
   "requirements": [
     {
-      "name": "Image has correct alternative text",
-      "points": 5,
+      "name": "Page has semantic structure",
+      "points": 10,
       "check": {
-        "type": "attribute",
-        "selector": "img",
-        "attribute": "alt",
-        "equals": "LearnThenCode logo"
+        "type": "semantic",
+        "elements": [
+          "header",
+          "main",
+          "footer"
+        ]
       }
     }
   ]
