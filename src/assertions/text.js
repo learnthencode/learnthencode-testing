@@ -1,6 +1,5 @@
 import { expect } from "./expect.js";
 
-
 /**
  * Checks whether an element contains specific text.
  *
@@ -11,6 +10,7 @@ import { expect } from "./expect.js";
 export function textContains($, requirement) {
 
   const {
+    name,
     check,
   } = requirement;
 
@@ -19,22 +19,52 @@ export function textContains($, requirement) {
     $(check.selector);
 
 
-  const text =
+  const actualText =
     element.text().trim();
 
+  let expectedText =
+    check.contains ?? check.equals;
 
-  const exists =
-    text.includes(
-      check.contains
-    );
+  let comparisonText =
+    actualText;
 
+  if (check.caseSensitive === false) {
+
+    comparisonText =
+      actualText.toLowerCase();
+
+    expectedText =
+      expectedText.toLowerCase();
+
+  }
+
+  let passed = false;
+
+  if ("contains" in check) {
+
+    passed =
+      comparisonText.includes(
+        expectedText
+      );
+
+  }
+
+  if ("equals" in check) {
+
+    passed =
+      comparisonText === expectedText;
+
+  }
 
   return expect({
     requirement,
 
-    condition: exists,
+    condition: passed,
 
     message:
-      `Expected ${check.selector} to contain "${check.contains}".`,
+      check.contains
+        ? `Expected ${check.selector} to contain "${check.contains}", but found "${actualText}".`
+        : `Expected ${check.selector} to equal "${check.equals}", but found "${actualText}".`,
   });
+
 }

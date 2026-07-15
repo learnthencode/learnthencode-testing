@@ -1,29 +1,27 @@
-import { discoverTests } from "./discover-tests.js";
+import { loadTests } from "../providers/local-provider.js";
 import { loadRequirements } from "./load-requirements.js";
 import { loadHTML } from "./load-html.js";
 import { executeRequirement } from "./execute-requirements.js";
 import { createResultCollection } from "./results.js";
-
+import { loadLab } from "./lab.js";
+import path from "path";
 
 export function run(labDirectory) {
-    const discovered = discoverTests(labDirectory);
+    const lab = loadLab(labDirectory);
 
-
-    const requirementsFile = discovered.tests.find(
-        (test) => test.type === "requirements"
+    const testsDirectory = path.join(
+        labDirectory,
+        "..",
+        "private-tests"
     );
 
-
-    if (!requirementsFile) {
-        throw new Error(
-            "No requirements.json file found."
-        );
-    }
-
+    const requirementsFile = loadTests(
+        testsDirectory
+    );
 
     const labDefinition =
         loadRequirements(
-            requirementsFile.path
+            requirementsFile
         );
 
 
@@ -31,15 +29,15 @@ export function run(labDirectory) {
         labDefinition.requirements;
 
 
-    const html =
-        loadHTML(
-            `${labDirectory}/starter/index.html`
-        );
-
+    const html = loadHTML(
+        path.join(
+            labDirectory,
+            lab.entry
+        )
+    );
 
     const results =
         createResultCollection();
-
 
     for (const requirement of requirements) {
         results.add(
@@ -49,7 +47,6 @@ export function run(labDirectory) {
             )
         );
     }
-
 
     return results;
 }

@@ -1,0 +1,13 @@
+{
+  "requirements": [
+    {
+      "name": "Heading has the correct title",
+      "points": 5,
+      "check": {
+        "type": "text",
+        "selector": "h1",
+        "equals": "LearnThenCode"
+      }
+    }
+  ]
+}

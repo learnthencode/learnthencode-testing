@@ -1,4 +1,7 @@
 import { MESSAGES } from "../constants/messages.js";
+import { detectLab } from "../core/detect-lab.js";
+import { run } from "../core/runner.js";
+import { report } from "../reporter/console-reporter.js";
 
 
 /**
@@ -23,16 +26,15 @@ export async function handleCommand(args) {
 
 
   if (command === "run") {
-    const { run } = await import("../core/runner.js");
-    const { report } = await import("../reporter/console-reporter.js");
 
+    const labDirectory = detectLab();
 
-    const results = run("./test-lab");
+    const results = run(labDirectory);
 
     report(results);
 
     return;
-  }
+}
 
 
   console.log(MESSAGES.unknownCommand);
