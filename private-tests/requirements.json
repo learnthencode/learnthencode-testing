@@ -1,12 +1,13 @@
 {
   "requirements": [
     {
-      "name": "Heading has the correct title",
+      "name": "Image has correct alternative text",
       "points": 5,
       "check": {
-        "type": "text",
-        "selector": "h1",
-        "equals": "LearnThenCode"
+        "type": "attribute",
+        "selector": "img",
+        "attribute": "alt",
+        "equals": "LearnThenCode logo"
       }
     }
   ]

@@ -2,7 +2,8 @@ import { expect } from "./expect.js";
 
 
 /**
- * Checks whether an element contains an attribute.
+ * Checks whether an element contains an attribute
+ * and optionally validates its value.
  *
  * @param {CheerioAPI} $
  * @param {object} requirement
@@ -19,17 +20,54 @@ export function attributeExists($, requirement) {
     $(check.selector);
 
 
+  const attributeValue =
+    element.attr(check.attribute);
+
+
   const exists =
     element.length > 0 &&
-    element.attr(check.attribute) !== undefined;
+    attributeValue !== undefined;
+
+
+  let passed =
+    exists;
+
+
+  let message =
+    `Could not find ${check.attribute} attribute on ${check.selector} element.`;
+
+
+  if (exists && "equals" in check) {
+
+    passed =
+      attributeValue === check.equals;
+
+
+    message =
+      `Expected ${check.selector} ${check.attribute} to equal "${check.equals}", but found "${attributeValue}".`;
+
+  }
+
+
+  if (exists && "contains" in check) {
+
+    passed =
+      attributeValue.includes(
+        check.contains
+      );
+
+
+    message =
+      `Expected ${check.selector} ${check.attribute} to contain "${check.contains}", but found "${attributeValue}".`;
+
+  }
 
 
   return expect({
     requirement,
 
-    condition: exists,
+    condition: passed,
 
-    message:
-      `Could not find ${check.attribute} attribute on ${check.selector} element.`,
+    message,
   });
 }
