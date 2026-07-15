@@ -1,15 +1,20 @@
 {
   "requirements": [
     {
-      "name": "Page has semantic structure",
-      "points": 10,
+      "id": "html-001",
+      "category": "HTML",
+      "topic": "Headings",
+      "difficulty": "beginner",
+      "learningObjective": "Create a primary page heading.",
+      "estimatedTime": 3,
+      "name": "Page contains exactly one heading",
+      "description": "Use one h1 element.",
+      "hint": "Every page should have one primary heading.",
+      "points": 5,
       "check": {
-        "type": "semantic",
-        "elements": [
-          "header",
-          "main",
-          "footer"
-        ]
+        "type": "count",
+        "selector": "h1",
+        "equals": 1
       }
     }
   ]

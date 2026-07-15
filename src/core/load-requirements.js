@@ -1,18 +1,20 @@
 import fs from "fs";
+import { validateRequirement } from "./validate-requirement.js";
 
-
-/**
- * Loads a requirements test file.
- *
- * @param {string} filePath
- * @returns {object}
- */
 export function loadRequirements(filePath) {
-  const content = fs.readFileSync(
-    filePath,
-    "utf-8"
-  );
 
+  const content =
+    fs.readFileSync(
+      filePath,
+      "utf8"
+    );
 
-  return JSON.parse(content);
+  const definition =
+    JSON.parse(content);
+
+  for (const requirement of definition.requirements) {
+    validateRequirement(requirement);
+  }
+
+  return definition;
 }
