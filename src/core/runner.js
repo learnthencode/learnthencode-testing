@@ -30,7 +30,6 @@ export function run(labDirectory) {
     // keeping hidden test files out of the learner's workspace.
     const testsDirectory = path.join(
         labDirectory,
-        "..",
         "private-tests"
     );
 
