@@ -384,5 +384,5 @@ Contributions, bug reports, and feature requests are welcome. Please open an iss
 
 ## License
 
-[LearnThenCode License v1.0](./LICENSE) © 2026 Yahya Mohamed
+[LearnThenCode License v1.0](./LICENSE.md) © 2026 Yahya Mohamed
 
