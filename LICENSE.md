@@ -1,4 +1,3 @@
-```markdown
 # LearnThenCode License v1.0
 
 **Copyright © 2026 Yahya Mohamed. All rights reserved.**
@@ -114,4 +113,3 @@ This license shall be governed and interpreted in accordance with the applicable
 ## 13. Acceptance
 
 By copying, downloading, accessing, or using the Software or Educational Materials, you acknowledge that you have read, understood, and agree to be bound by the terms of the LearnThenCode License v1.0.
-```
