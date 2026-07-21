@@ -1,21 +1,117 @@
-MIT License
+```markdown
+# LearnThenCode License v1.0
 
-Copyright (c) 2026 Yahya Mohamed
+**Copyright © 2026 Yahya Mohamed. All rights reserved.**
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 1. Purpose
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The LearnThenCode License v1.0 is intended to make LearnThenCode software, curriculum, and educational resources available for learning while protecting them from unauthorized commercial use.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+By accessing, downloading, copying, or using any material distributed under this license, you agree to the terms below.
+
+---
+
+## 2. Definitions
+
+For the purposes of this license:
+
+- **Software** means the source code, executable programs, scripts, configuration files, testing frameworks, and related technical resources.
+- **Educational Materials** means lessons, curriculum, documentation, laboratories, examples, exercises, and accompanying content.
+- **Author** means Yahya Mohamed, the copyright holder.
+- **Commercial Use** means any use intended for commercial advantage or monetary compensation, whether direct or indirect.
+
+---
+
+## 3. Permitted Uses
+
+You may, free of charge:
+
+- View and study the source code.
+- Clone this repository.
+- Download and use the Software and Educational Materials for personal learning.
+- Modify the Software for your own non-commercial educational purposes.
+- Share unmodified copies of this repository provided this license and all copyright notices remain intact.
+- Reference or cite portions of the work with proper attribution.
+
+---
+
+## 4. Restrictions
+
+Without prior written permission from the Author, you may **not**:
+
+- Sell this Software or Educational Materials.
+- Sell modified versions or derivative works.
+- Use this Software or Educational Materials in any paid course, bootcamp, workshop, coaching program, consulting service, or commercial training program.
+- Redistribute modified versions.
+- Remove, alter, or obscure copyright notices or this license.
+- Rebrand the Software or Educational Materials as your own.
+- Include any portion of this Software or Educational Materials within a commercial product or service.
+- Offer hosting, Software-as-a-Service (SaaS), or similar services based on this Software.
+- Use this Software or Educational Materials in any manner primarily intended to generate revenue.
+
+---
+
+## 5. Educational Institutions
+
+Accredited schools, universities, colleges, and non-profit educational institutions may use this Software and Educational Materials for classroom instruction provided that:
+
+- No additional fee is charged specifically for access to the Software or Educational Materials.
+- Proper attribution is maintained.
+- The Software or Educational Materials are not modified and redistributed without written permission.
+
+Commercial training organizations and private bootcamps are **not** covered by this provision.
+
+---
+
+## 6. Ownership
+
+All intellectual property rights remain the exclusive property of the Author.
+
+No ownership rights are transferred under this license.
+
+---
+
+## 7. Contributions
+
+Unless otherwise agreed in writing, any contribution submitted to this repository grants the Author a perpetual, worldwide, royalty-free, irrevocable license to use, modify, distribute, and sublicense that contribution as part of LearnThenCode.
+
+---
+
+## 8. No Warranty
+
+THE SOFTWARE AND EDUCATIONAL MATERIALS ARE PROVIDED **"AS IS"**, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+---
+
+## 9. Limitation of Liability
+
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF OR INABILITY TO USE THE SOFTWARE OR EDUCATIONAL MATERIALS.
+
+---
+
+## 10. Commercial Licensing
+
+Organizations or individuals wishing to use this Software or Educational Materials for commercial purposes must obtain prior written permission from the Author.
+
+Commercial licensing inquiries may be directed to the Author using the official LearnThenCode contact channels.
+
+---
+
+## 11. Termination
+
+Any violation of this license automatically terminates the permissions granted under it.
+
+Upon termination, you must cease using and distributing the Software and Educational Materials and destroy any unauthorized copies in your possession.
+
+---
+
+## 12. Governing Law
+
+This license shall be governed and interpreted in accordance with the applicable laws of the jurisdiction selected by the Author, unless otherwise required by law.
+
+---
+
+## 13. Acceptance
+
+By copying, downloading, accessing, or using the Software or Educational Materials, you acknowledge that you have read, understood, and agree to be bound by the terms of the LearnThenCode License v1.0.
+```
