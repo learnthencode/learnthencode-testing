@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "lesson": "02-css-fundamentals",
+  "lab": "css-styling",
+  "requirements": [
+    {
+      "id": "css-001",
+      "name": "Title has correct text color",
+      "description": "The .title element should have red text color.",
+      "points": 5,
+      "hint": "Use the color property: color: red;",
+      "check": {
+        "type": "css",
+        "selector": ".title",
+        "property": "color",
+        "value": "red"
+      }
+    },
+    {
+      "id": "css-002",
+      "name": "Title has correct font size",
+      "description": "The .title element should have font-size of 32px.",
+      "points": 5,
+      "hint": "Use the font-size property: font-size: 32px;",
+      "check": {
+        "type": "css",
+        "selector": ".title",
+        "property": "font-size",
+        "value": "32px"
+      }
+    },
+    {
+      "id": "css-003",
+      "name": "Container uses Flexbox",
+      "description": "The .container element should use Flexbox layout.",
+      "points": 5,
+      "hint": "Use display: flex on the container.",
+      "check": {
+        "type": "css",
+        "selector": ".container",
+        "assertion": "flexbox"
+      }
+    },
+    {
+      "id": "css-004",
+      "name": "Grid container uses CSS Grid",
+      "description": "The .grid-container element should use CSS Grid.",
+      "points": 5,
+      "hint": "Use display: grid on the grid container.",
+      "check": {
+        "type": "css",
+        "selector": ".grid-container",
+        "assertion": "grid"
+      }
+    },
+    {
+      "id": "css-005",
+      "name": "Hidden element is not visible",
+      "description": "The .hidden-element should be hidden.",
+      "points": 5,
+      "hint": "Use display: none or visibility: hidden.",
+      "check": {
+        "type": "css",
+        "selector": ".hidden-element",
+        "assertion": "visibility",
+        "property": "display",
+        "value": "none"
+      }
+    },
+    {
+      "id": "css-006",
+      "name": "Button has yellow background via inline style",
+      "description": "The button should have a yellow background (inline style).",
+      "points": 5,
+      "hint": "Add style='background-color: yellow;' to the button.",
+      "check": {
+        "type": "css",
+        "selector": ".btn",
+        "property": "background-color",
+        "value": "yellow"
+      }
+    },
+    {
+      "id": "css-007",
+      "name": "Embedded style applies color",
+      "description": "The .embedded element should have green text from embedded styles.",
+      "points": 5,
+      "hint": "The embedded <style> block should set color: green on .embedded.",
+      "check": {
+        "type": "css",
+        "selector": ".embedded",
+        "property": "color",
+        "value": "green"
+      }
+    },
+    {
+      "id": "css-008",
+      "name": "Container has grouped styles",
+      "description": "The .container should have correct display, justify-content, and align-items.",
+      "points": 10,
+      "hint": "Use Flexbox properties: display, justify-content, align-items.",
+      "check": {
+        "type": "css",
+        "selector": ".container",
+        "styles": {
+          "display": "flex",
+          "justify-content": "center",
+          "align-items": "center"
+        }
+      }
+    },
+    {
+      "id": "css-009",
+      "name": "Card has proper border radius",
+      "description": "The .card elements should have border-radius of 4px.",
+      "points": 5,
+      "hint": "Use border-radius: 4px;",
+      "check": {
+        "type": "css",
+        "selector": ".card",
+        "property": "border-radius",
+        "value": "4px"
+      }
+    },
+    {
+      "id": "css-010",
+      "name": "Container has padding",
+      "description": "The .container should have 20px padding.",
+      "points": 5,
+      "hint": "Use padding: 20px;",
+      "check": {
+        "type": "css",
+        "selector": ".container",
+        "property": "padding",
+        "value": "20px"
+      }
+    }
+  ]
+}

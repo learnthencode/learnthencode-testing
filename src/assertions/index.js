@@ -4,6 +4,7 @@ import { semanticExists } from "./semantic.js";
 import { textContains } from "./text.js";
 import { elementCount } from "./count.js";
 import { structureExists } from "./structure.js";
+import { cssAssertion } from "./css/index.js";
 
 
 /**
@@ -24,4 +25,5 @@ export const assertions = {
   text:      textContains,
   count:     elementCount,
   structure: structureExists,
+  css:       cssAssertion,
 };

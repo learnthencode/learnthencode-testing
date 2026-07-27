@@ -1,0 +1,20 @@
+{
+  "requirements": [
+    {
+      "id": "html-001",
+      "name": "Page contains a heading",
+      "description": "The page should contain an h1 element.",
+      "points": 5,
+      "hint": "Add an h1 element to your page.",
+      "check": { "type": "element", "selector": "h1" }
+    },
+    {
+      "id": "html-002",
+      "name": "Navigation contains correctly nested links",
+      "description": "Navigation links should be inside a list within the nav element.",
+      "points": 5,
+      "hint": "Use the structure nav > ul > li > a.",
+      "check": { "type": "structure", "selector": "nav > ul > li > a" }
+    }
+  ]
+}

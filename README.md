@@ -1,8 +1,10 @@
 # learnthencode-testing
 
-> A lightweight HTML testing framework for the [LearnThenCode](https://learnthencode.com) Full Stack Software Engineering Bootcamp.
+> A lightweight HTML and CSS testing framework for the [LearnThenCode](https://learnthencode.com) Full Stack Software Engineering Bootcamp.
 
-`learnthencode-testing` provides a declarative, JSON-driven way to validate learner HTML submissions against a set of requirements. It ships with a CLI, a rich set of built-in assertion types, and a color-coded console reporter designed for an educational environment.
+`learnthencode-testing` provides a declarative, JSON-driven way to validate learner HTML and CSS submissions against a set of requirements. It ships with a CLI, a rich set of built-in assertion types, and a color-coded console reporter designed for an educational environment.
+
+For HTML labs, the framework uses [Cheerio](https://cheerio.js.org/) to parse and query the DOM. For CSS labs, it uses [jsdom](https://github.com/jsdom/jsdom) to render the HTML, load stylesheets, apply styles, and validate **computed styles** — giving accurate pass/fail feedback that matches what the learner sees in the browser.
 
 ---
 
@@ -38,12 +40,12 @@ npm install learnthencode-testing
 
 ## How It Works
 
-The framework operates around the concept of a **lab** — a directory containing a learner's HTML work alongside a configuration file. When you run `learnthencode-test run`, the framework:
+The framework operates around the concept of a **lab** — a directory containing a learner's HTML/CSS work alongside a configuration file. When you run `learnthencode-test run`, the framework:
 
 1. **Detects** the lab by looking for `learnthencode.json` in the current directory.
 2. **Loads** the lab's entry HTML file (e.g. `starter/index.html`).
 3. **Discovers** the hidden `requirements.json` from the `private-tests` directory (one level up from the lab).
-4. **Executes** each requirement's assertion against the parsed HTML using [Cheerio](https://cheerio.js.org/).
+4. **Executes** each requirement's assertion against the parsed HTML using [Cheerio](https://cheerio.js.org/) (for HTML assertions) or renders the HTML with CSS using [jsdom](https://github.com/jsdom/jsdom) and validates computed styles (for CSS assertions).
 5. **Reports** pass/fail results, hints, score, and percentage to the console.
 
 ```
@@ -332,6 +334,195 @@ Passes if elements matching the full CSS selector chain are found. Useful for en
 
 ---
 
+#### `css` — CSS Computed Style Assertion
+
+Validates the **final rendered CSS** of an element using the browser's computed style API (via [jsdom](https://github.com/jsdom/jsdom)). This approach ensures inheritance, shorthand properties, external stylesheets, inline styles, and CSS variables all work correctly.
+
+Unlike HTML assertions that inspect the DOM structure, CSS assertions load the HTML, load linked stylesheets, apply embedded `<style>` blocks, apply inline styles, render the DOM, and read computed styles.
+
+> **Important:** CSS assertions require the lab directory so external stylesheets can be resolved from disk.
+
+---
+
+##### Single Property Assertion
+
+Passes if the element's computed value for the specified CSS property matches the expected value.
+
+```json
+{
+  "type": "css",
+  "selector": "h1",
+  "property": "color",
+  "value": "red"
+}
+```
+
+Property names can use either kebab-case or camelCase:
+
+```json
+{
+  "type": "css",
+  "selector": ".container",
+  "property": "justifyContent",
+  "value": "center"
+}
+```
+
+##### Grouped Styles Assertion
+
+Passes if all specified CSS properties match their expected values:
+
+```json
+{
+  "type": "css",
+  "selector": ".container",
+  "styles": {
+    "display": "flex",
+    "justifyContent": "center",
+    "alignItems": "center"
+  }
+}
+```
+
+##### Specialized Assertions
+
+Use the `assertion` field for higher-level checks.
+
+**Flexbox:**
+
+```json
+{
+  "type": "css",
+  "selector": ".container",
+  "assertion": "flexbox"
+}
+```
+
+**CSS Grid:**
+
+```json
+{
+  "type": "css",
+  "selector": ".grid-container",
+  "assertion": "grid"
+}
+```
+
+##### Property-Specific Checks
+
+You can also pass specific properties directly in the assertion:
+
+```json
+{
+  "type": "css",
+  "selector": ".btn",
+  "assertion": "visibility",
+  "property": "display",
+  "value": "none"
+}
+```
+
+---
+
+##### Value Normalization
+
+CSS values are normalized before comparison. This means the following color formats are treated as equivalent:
+
+- `red`, `#ff0000`, `rgb(255, 0, 0)` → all match
+
+Font weights are also normalized:
+
+- `bold` ↔ `700`
+- `normal` ↔ `400`
+
+Case differences and extra whitespace are ignored.
+
+---
+
+##### What Gets Validated
+
+The framework validates **computed styles** — the actual rendered CSS after:
+
+- External stylesheet loading (`<link rel="stylesheet">`)
+- Embedded `<style>` blocks
+- Inline `style` attributes
+- CSS inheritance
+- Shorthand property expansion
+- Browser default styles
+
+This gives accurate pass/fail feedback that matches what the learner sees in the browser.
+
+---
+
+##### CSS Lab Configuration
+
+CSS labs use the same `learnthencode.json` format as HTML labs:
+
+```json
+{
+  "id": "css-styling",
+  "title": "CSS Styling",
+  "lesson": "lesson-02",
+  "language": "css",
+  "entry": "starter/index.html",
+  "version": "1.0.0"
+}
+```
+
+The `language` field should be set to `"css"`.
+
+---
+
+##### Responsive Testing
+
+The framework supports viewport switching for responsive design testing. Use the `viewport` field to specify the viewport dimensions:
+
+```json
+{
+  "type": "css",
+  "selector": ".navbar",
+  "property": "flex-direction",
+  "value": "column",
+  "viewport": { "width": 375, "height": 667 }
+}
+```
+
+This allows you to validate that CSS media queries produce the correct styles at different screen sizes.
+
+---
+
+##### Programmatic Expect API
+
+For `.test.js` files, a chainable expect API is available:
+
+```js
+import { expectCSS } from "learnthencode-testing/src/assertions/css/expect.js";
+
+expectCSS("h1").toHaveCSS("color", "red");
+expectCSS(".container").toHaveStyles({ display: "flex", justifyContent: "center" });
+expectCSS(".navbar").toUseFlexbox();
+expectCSS(".grid").toUseGrid();
+expectCSS(".visible").toBeVisible();
+expectCSS(".hidden").toBeHidden();
+expectCSS(".box").toHaveBackgroundColor("blue");
+expectCSS("h1").toHaveTextColor("red");
+expectCSS("p").toHaveFontSize("16px");
+expectCSS("p").toHaveFontFamily("Arial");
+expectCSS("div").toHaveMargin("10px");
+expectCSS("div").toHavePadding("20px");
+expectCSS("div").toHaveBorder("1px solid black");
+expectCSS("div").toHaveBorderRadius("4px");
+expectCSS("div").toHaveWidth("200px");
+expectCSS("div").toHaveHeight("100px");
+expectCSS("div").toHaveMaxWidth("300px");
+expectCSS("div").toHaveMinWidth("50px");
+expectCSS("div").toHaveDisplay("flex");
+expectCSS("div").toHavePosition("absolute");
+expectCSS("div").toHaveOverflow("hidden");
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -340,6 +531,20 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
+│   │   ├── css/                ← CSS computed-style assertions
+│   │   │   ├── base.js
+│   │   │   ├── borders.js
+│   │   │   ├── colors.js
+│   │   │   ├── expect.js
+│   │   │   ├── flexbox.js
+│   │   │   ├── grid.js
+│   │   │   ├── index.js
+│   │   │   ├── layout.js
+│   │   │   ├── normalize.js
+│   │   │   ├── responsive.js
+│   │   │   ├── spacing.js
+│   │   │   ├── typography.js
+│   │   │   └── visibility.js
 │   │   ├── attributes.js
 │   │   ├── count.js
 │   │   ├── elements.js
@@ -366,6 +571,7 @@ learnthencode-testing/
 │   │   ├── validate-lab.js
 │   │   └── validate-requirement.js
 │   ├── providers/
+│   │   ├── css-renderer.js     ← CSS rendering engine (jsdom)
 │   │   └── local-provider.js   ← Loads requirements from the local filesystem
 │   └── reporter/
 │       ├── colors.js           ← ANSI colour helpers

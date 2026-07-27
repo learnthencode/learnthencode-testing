@@ -23,22 +23,17 @@ import path from "path";
  * @returns {object} A result collection with results and a summary().
  */
 export function run(labDirectory) {
-    // Load and validate the lab config (learnthencode.json)
     const lab = loadLab(labDirectory);
 
-    // private-tests lives one level above the lab directory,
-    // keeping hidden test files out of the learner's workspace.
     const testsDirectory = path.join(
         labDirectory,
         "private-tests"
     );
 
-    // Resolve the path to requirements.json inside private-tests
     const requirementsFile = loadTests(
         testsDirectory
     );
 
-    // Parse requirements.json and validate each requirement's schema
     const labDefinition =
         loadRequirements(
             requirementsFile
@@ -47,15 +42,13 @@ export function run(labDirectory) {
     const requirements =
         labDefinition.requirements;
 
-    // Read the learner's HTML submission from disk
-    const html = loadHTML(
-        path.join(
-            labDirectory,
-            lab.entry  // e.g. "starter/index.html"
-        )
+    const htmlFilePath = path.join(
+        labDirectory,
+        lab.entry
     );
 
-    // Collect results from each requirement assertion
+    const html = loadHTML(htmlFilePath);
+
     const results =
         createResultCollection();
 
@@ -63,7 +56,8 @@ export function run(labDirectory) {
         results.add(
             executeRequirement(
                 requirement,
-                html
+                html,
+                htmlFilePath
             )
         );
     }

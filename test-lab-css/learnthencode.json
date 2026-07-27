@@ -1,0 +1,10 @@
+{
+  "id": "css-styling",
+  "title": "CSS Styling",
+  "language": "css",
+  "entry": "starter/index.html",
+  "provider": "local",
+  "tests": "./private-tests",
+  "lesson": "lesson-02",
+  "version": "1.0.0"
+}

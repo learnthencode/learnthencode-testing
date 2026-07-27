@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "lesson": "02-css-fundamentals",
+  "lab": "css-styling",
+  "requirements": [
+    {
+      "id": "css-local-001",
+      "name": "Page has a title element",
+      "description": "The page should contain an h1 element.",
+      "points": 5,
+      "hint": "Add an h1 element to your page.",
+      "check": { "type": "element", "selector": "h1" }
+    }
+  ]
+}
