@@ -226,21 +226,35 @@ export function normalizeFontWeight(value) {
   return trimmed;
 }
 
-export function normalizeLength(value) {
-  if (!value) return null;
-  const trimmed = value.trim().toLowerCase();
+function normalizeLengthToken(token) {
+  const trimmed = token.trim().toLowerCase();
+  if (!trimmed) return trimmed;
 
-  const numMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)(px|em|rem|%|vh|vw|pt|cm|mm|in|pc|ex|ch)?$/);
-  if (numMatch) {
-    const num = parseFloat(numMatch[1]);
-    const unit = numMatch[2] || "";
-    if (unit === "px" || unit === "") {
-      if (Number.isInteger(num)) return `${num}px`;
-      return `${num}px`;
-    }
+  const numMatch = trimmed.match(
+    /^(-?\d+(?:\.\d+)?)(px|em|rem|%|vh|vw|vmin|vmax|pt|cm|mm|in|pc|ex|ch|q)?$/
+  );
+  if (!numMatch) return trimmed;
+
+  const num = parseFloat(numMatch[1]);
+  const unit = numMatch[2] || "";
+
+  if (unit === "" || unit === "px") {
+    if (num === 0) return "0px";
+    if (Number.isInteger(num)) return `${num}px`;
+    return `${num}px`;
   }
 
   return trimmed;
+}
+
+export function normalizeLength(value) {
+  if (!value) return null;
+
+  return value
+    .trim()
+    .split(/\s+/)
+    .map(normalizeLengthToken)
+    .join(" ");
 }
 
 function stripImportant(value) {
@@ -258,6 +272,58 @@ function stripTrailingSemicolon(value) {
   return v;
 }
 
+const lengthProps = new Set([
+  "margin",
+  "margin-top",
+  "margin-right",
+  "margin-bottom",
+  "margin-left",
+  "padding",
+  "padding-top",
+  "padding-right",
+  "padding-bottom",
+  "padding-left",
+  "border-width",
+  "border-top-width",
+  "border-right-width",
+  "border-bottom-width",
+  "border-left-width",
+  "border-radius",
+  "border-top-left-radius",
+  "border-top-right-radius",
+  "border-bottom-right-radius",
+  "border-bottom-left-radius",
+  "gap",
+  "row-gap",
+  "column-gap",
+  "width",
+  "min-width",
+  "max-width",
+  "height",
+  "min-height",
+  "max-height",
+  "top",
+  "right",
+  "bottom",
+  "left",
+  "font-size",
+]);
+
+const colorProps = new Set([
+  "color",
+  "background-color",
+  "background",
+  "border-color",
+  "border-top-color",
+  "border-right-color",
+  "border-bottom-color",
+  "border-left-color",
+  "outline-color",
+  "text-decoration-color",
+]);
+
+const fontWeightProps = new Set(["font-weight"]);
+
 export function normalizeCSSValue(property, value) {
   if (!value) return null;
 
@@ -265,29 +331,18 @@ export function normalizeCSSValue(property, value) {
   cleaned = stripImportant(cleaned);
   cleaned = stripTrailingSemicolon(cleaned);
 
-  const colorProps = [
-    "color",
-    "background-color",
-    "background",
-    "border-color",
-    "border-top-color",
-    "border-right-color",
-    "border-bottom-color",
-    "border-left-color",
-    "outline-color",
-    "text-decoration-color",
-  ];
-
-  const fontWeightProps = ["font-weight"];
-
   const lowerProp = property.toLowerCase();
 
-  if (colorProps.includes(lowerProp)) {
+  if (colorProps.has(lowerProp)) {
     return normalizeColor(cleaned);
   }
 
-  if (fontWeightProps.includes(lowerProp)) {
+  if (fontWeightProps.has(lowerProp)) {
     return normalizeFontWeight(cleaned);
+  }
+
+  if (lengthProps.has(lowerProp)) {
+    return normalizeLength(cleaned);
   }
 
   return cleaned.toLowerCase();
@@ -310,27 +365,13 @@ export function valuesEqual(property, expected, actual) {
   if (expected === undefined || expected === null) return false;
   if (actual === undefined || actual === null) return false;
 
-  const colorProps = [
-    "color",
-    "background-color",
-    "border-color",
-    "border-top-color",
-    "border-right-color",
-    "border-bottom-color",
-    "border-left-color",
-    "outline-color",
-    "text-decoration-color",
-  ];
-
-  const fontWeightProps = ["font-weight"];
-
   const lowerProp = property.toLowerCase();
 
-  if (colorProps.includes(lowerProp)) {
+  if (colorProps.has(lowerProp)) {
     return valuesEqualColor(lowerProp, expected, actual);
   }
 
-  if (fontWeightProps.includes(lowerProp)) {
+  if (fontWeightProps.has(lowerProp)) {
     return valuesEqualFontWeight(expected, actual);
   }
 
