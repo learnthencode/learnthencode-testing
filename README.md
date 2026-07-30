@@ -1,10 +1,10 @@
 # learnthencode-testing
 
-> A lightweight HTML and CSS testing framework for the [LearnThenCode](https://learnthencode.com) Full Stack Software Engineering Bootcamp.
+> A lightweight HTML, CSS, and JavaScript testing framework for the [LearnThenCode](https://learnthencode.com) Full Stack Software Engineering Bootcamp.
 
-`learnthencode-testing` provides a declarative, JSON-driven way to validate learner HTML and CSS submissions against a set of requirements. It ships with a CLI, a rich set of built-in assertion types, and a color-coded console reporter designed for an educational environment.
+`learnthencode-testing` provides a declarative, JSON-driven way to validate learner HTML, CSS, and JavaScript submissions against a set of requirements. It ships with a CLI, a rich set of built-in assertion types, and a color-coded console reporter designed for an educational environment.
 
-For HTML labs, the framework uses [Cheerio](https://cheerio.js.org/) to parse and query the DOM. For CSS labs, it uses [jsdom](https://github.com/jsdom/jsdom) to render the HTML, load stylesheets, apply styles, and validate **computed styles** — giving accurate pass/fail feedback that matches what the learner sees in the browser.
+For HTML labs, the framework uses [Cheerio](https://cheerio.js.org/) to parse and query the DOM. For CSS labs, it uses [jsdom](https://github.com/jsdom/jsdom) to render the HTML, load stylesheets, apply styles, and validate **computed styles** — giving accurate pass/fail feedback that matches what the learner sees in the browser. For JavaScript labs, it uses a sandboxed execution engine built on Node.js `vm` and `jsdom` to safely evaluate student code and inspect variables, functions, arrays, objects, DOM manipulation, events, fetch calls, and JSON operations.
 
 ---
 
@@ -40,12 +40,12 @@ npm install learnthencode-testing
 
 ## How It Works
 
-The framework operates around the concept of a **lab** — a directory containing a learner's HTML/CSS work alongside a configuration file. When you run `learnthencode-test run`, the framework:
+The framework operates around the concept of a **lab** — a directory containing a learner's work alongside a configuration file. When you run `learnthencode-test run`, the framework:
 
 1. **Detects** the lab by looking for `learnthencode.json` in the current directory.
-2. **Loads** the lab's entry HTML file (e.g. `starter/index.html`).
+2. **Loads** the lab's entry file (HTML or JavaScript).
 3. **Discovers** the hidden `requirements.json` from the `private-tests` directory (one level up from the lab).
-4. **Executes** each requirement's assertion against the parsed HTML using [Cheerio](https://cheerio.js.org/) (for HTML assertions) or renders the HTML with CSS using [jsdom](https://github.com/jsdom/jsdom) and validates computed styles (for CSS assertions).
+4. **Executes** each requirement's assertion — HTML assertions use [Cheerio](https://cheerio.js.org/) to parse the DOM, CSS assertions render with [jsdom](https://github.com/jsdom/jsdom) and validate computed styles, and JavaScript assertions evaluate code in a sandboxed execution environment.
 5. **Reports** pass/fail results, hints, score, and percentage to the console.
 
 ```
@@ -85,7 +85,7 @@ learnthencode-test --version
 ```
 ========================================
  LearnThenCode Testing Framework
- Version 1.0.0
+ Version 1.2.0
 ========================================
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -491,6 +491,360 @@ This allows you to validate that CSS media queries produce the correct styles at
 
 ---
 
+---
+
+### JavaScript Assertions
+
+JavaScript assertions validate student JavaScript code by evaluating it in a sandboxed [Node.js `vm`](https://nodejs.org/api/vm.html) context with a [jsdom](https://github.com/jsdom/jsdom) browser environment. This provides:
+
+- Access to browser APIs (`document`, `window`, `fetch`, etc.)
+- Mock `fetch` that records calls for later inspection (no real network requests)
+- Intercepted `JSON.parse` / `JSON.stringify` for usage verification
+- Console output capture
+- Support for `let`, `const`, and `var` declarations
+
+#### `variable` — Variable Exists or Has Value
+
+Passes if the named variable exists in the global scope.
+
+```json
+{
+  "type": "variable",
+  "name": "username"
+}
+```
+
+With exact value check:
+
+```json
+{
+  "type": "variable",
+  "name": "age",
+  "value": 25
+}
+```
+
+Works with `let`, `const`, and `var` declarations.
+
+---
+
+#### `function` — Function Exists or Returns Correct Value
+
+Passes if the named function exists and optionally returns the expected value.
+
+```json
+{
+  "type": "function",
+  "name": "greet"
+}
+```
+
+With return value check (calls the function with provided arguments):
+
+```json
+{
+  "type": "function",
+  "name": "add",
+  "args": [2, 3],
+  "returns": 5
+}
+```
+
+With parameter count check:
+
+```json
+{
+  "type": "function",
+  "name": "greet",
+  "hasParams": true
+}
+```
+
+Works with both regular functions and arrow functions.
+
+---
+
+#### `array` — Array Exists, Has Length, or Contains Values
+
+Passes if the named variable is an array and optionally matches length/content constraints.
+
+```json
+{
+  "type": "array",
+  "name": "fruits"
+}
+```
+
+With length check:
+
+```json
+{
+  "type": "array",
+  "name": "fruits",
+  "length": 3
+}
+```
+
+With content check:
+
+```json
+{
+  "type": "array",
+  "name": "fruits",
+  "contains": ["apple", "banana"]
+}
+```
+
+---
+
+#### `object` — Object Exists, Has Property, or Has Property Value
+
+Passes if the named variable is a plain object and optionally has the specified property/value.
+
+```json
+{
+  "type": "object",
+  "name": "person"
+}
+```
+
+With property check:
+
+```json
+{
+  "type": "object",
+  "name": "person",
+  "property": "name"
+}
+```
+
+With property value check:
+
+```json
+{
+  "type": "object",
+  "name": "person",
+  "property": "age",
+  "value": 30
+}
+```
+
+---
+
+#### `dom` — DOM State After JavaScript Execution
+
+Validates the state of the DOM after JavaScript has executed. Useful for testing DOM manipulation.
+
+```json
+{
+  "type": "dom",
+  "assertion": "elementExists",
+  "selector": ".dynamic"
+}
+```
+
+Other supported assertions:
+
+```json
+{
+  "type": "dom",
+  "assertion": "textUpdated",
+  "selector": "#output",
+  "value": "Success"
+}
+```
+
+```json
+{
+  "type": "dom",
+  "assertion": "classAdded",
+  "selector": "#box",
+  "className": "active"
+}
+```
+
+```json
+{
+  "type": "dom",
+  "assertion": "classRemoved",
+  "selector": "#box",
+  "className": "hidden"
+}
+```
+
+| Assertion         | Description                                      | Required Fields                |
+| ----------------- | ------------------------------------------------ | ------------------------------ |
+| `elementExists`   | Element matching selector exists in the DOM      | `selector`                     |
+| `elementCreated`  | Element with tagName or selector was created      | `tagName` or `selector`        |
+| `elementRemoved`  | Element matching selector no longer exists        | `selector`                     |
+| `textUpdated`     | Element's textContent matches expected value      | `selector`, `value`            |
+| `classAdded`      | Element has the specified class                   | `selector`, `className`        |
+| `classRemoved`    | Element does not have the specified class         | `selector`, `className`        |
+
+---
+
+#### `event` — Event Handler Verification
+
+Dispatches a DOM event on the specified element and checks for an observable effect.
+
+```json
+{
+  "type": "event",
+  "assertion": "click",
+  "selector": "#myButton",
+  "effect": {
+    "target": "#output",
+    "property": "textContent",
+    "equals": "Clicked!"
+  }
+}
+```
+
+Supported event types: `click`, `submit`, `input`, `change`.
+
+The `effect` object describes what to check after the event fires:
+- `target` — CSS selector for the element to inspect
+- `property` — DOM property to read (e.g. `textContent`, `value`, `innerHTML`)
+- `equals` — Expected value of the property
+
+---
+
+#### `fetch` — Fetch API Call Verification
+
+Verifies that `fetch()` was called with the expected endpoint and/or HTTP method. No real network requests are made — fetch is mocked.
+
+```json
+{
+  "type": "fetch",
+  "assertion": "called"
+}
+```
+
+With endpoint check:
+
+```json
+{
+  "type": "fetch",
+  "endpoint": "/api/users"
+}
+```
+
+With endpoint and method check:
+
+```json
+{
+  "type": "fetch",
+  "endpoint": "/api/users",
+  "method": "POST"
+}
+```
+
+---
+
+#### `json` — JSON Method Usage
+
+Verifies that `JSON.parse()` or `JSON.stringify()` was called by the student's code.
+
+```json
+{
+  "type": "json",
+  "assertion": "parse"
+}
+```
+
+```json
+{
+  "type": "json",
+  "assertion": "stringify"
+}
+```
+
+---
+
+#### `console` — Console Output Verification
+
+Verifies that `console.log()` was called with expected output. The execution engine captures `console.log()`, `console.error()`, `console.warn()`, and `console.info()` calls. The captured output is then checked against the specified assertion.
+
+##### `logContains` — Partial Match
+
+Passes if at least one console.log call contains the expected text (substring match).
+
+```json
+{
+  "type": "console",
+  "assertion": "logContains",
+  "value": "Hello"
+}
+```
+
+##### `logEquals` — Exact Match
+
+Passes if at least one console.log call exactly equals the expected text.
+
+```json
+{
+  "type": "console",
+  "assertion": "logEquals",
+  "value": "Hello, World!"
+}
+```
+
+##### `logCount` — Call Count
+
+Passes if the total number of console.log calls matches the expected count.
+
+```json
+{
+  "type": "console",
+  "assertion": "logCount",
+  "value": 3
+}
+```
+
+##### `logOrder` — Ordered Output
+
+Passes if the ordered console output (each call joined by newline) contains the expected sequence. Useful for verifying that multiple log statements produce output in a specific order.
+
+```json
+{
+  "type": "console",
+  "assertion": "logOrder",
+  "value": "first\nsecond"
+}
+```
+
+---
+
+#### JavaScript Lab Configuration
+
+JavaScript labs use the same `learnthencode.json` format as HTML and CSS labs:
+
+```json
+{
+  "id": "js-variables",
+  "title": "JavaScript Variables",
+  "lesson": "lesson-03",
+  "language": "javascript",
+  "entry": "starter/script.js",
+  "version": "1.0.0"
+}
+```
+
+JavaScript labs can also use an HTML entry file that includes `<script>` tags:
+
+```json
+{
+  "id": "js-dom",
+  "title": "DOM Manipulation",
+  "lesson": "lesson-03",
+  "language": "javascript",
+  "entry": "starter/index.html",
+  "version": "1.0.0"
+}
+```
+
+---
+
 ##### Programmatic Expect API
 
 For `.test.js` files, a chainable expect API is available:
@@ -531,6 +885,16 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
+│   │   ├── javascript/         ← JavaScript assertions (v1.2.0)
+│   │   │   ├── index.js
+│   │   │   ├── variables.js
+│   │   │   ├── functions.js
+│   │   │   ├── arrays.js
+│   │   │   ├── objects.js
+│   │   │   ├── dom.js
+│   │   │   ├── events.js
+│   │   │   ├── fetch.js
+│   │   │   └── json.js
 │   │   ├── css/                ← CSS computed-style assertions
 │   │   │   ├── base.js
 │   │   │   ├── borders.js
@@ -563,6 +927,7 @@ learnthencode-testing/
 │   │   ├── detect-lab.js
 │   │   ├── discover-tests.js
 │   │   ├── execute-requirements.js
+│   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.0)
 │   │   ├── lab.js
 │   │   ├── load-html.js
 │   │   ├── load-requirements.js

@@ -4,49 +4,65 @@ import { renderCSS } from "../providers/css-renderer.js";
 
 const CSS_TYPES = new Set(["css"]);
 
+const JS_TYPES = new Set([
+  "variable",
+  "function",
+  "array",
+  "object",
+  "dom",
+  "event",
+  "fetch",
+  "json",
+  "console",
+]);
+
 function isCSSType(type) {
   return CSS_TYPES.has(type);
 }
 
-/**
- * Executes a single requirement against the learner's HTML.
- *
- * For HTML assertions, parses the HTML with Cheerio and runs the
- * assertion function. For CSS assertions, renders the HTML with CSS
- * using jsdom and runs the CSS assertion against computed styles.
- *
- * @param {object} requirement - A validated requirement object from requirements.json.
- * @param {string} html        - Raw HTML string to test against.
- * @param {string} htmlFilePath - Absolute path to the HTML entry file (needed for CSS rendering).
- * @returns {object}           - A result object (see createResult in results.js).
- * @throws {Error}             - If the check.type is not a recognised assertion.
- */
+function isJSType(type) {
+  return JS_TYPES.has(type);
+}
+
+export { isJSType };
+
 export function executeRequirement(
   requirement,
   html,
-  htmlFilePath
+  htmlFilePath,
+  jsEngine
 ) {
   const { check } = requirement;
 
   if (isCSSType(check.type)) {
     const window = renderCSS(html, htmlFilePath);
-    const assertion =
-      assertions[check.type];
+    const assertion = assertions[check.type];
     if (!assertion) {
       throw new Error(
         `Unsupported assertion type: ${check.type}`
       );
     }
-    return assertion(
-      window,
-      requirement
-    );
+    return assertion(window, requirement);
+  }
+
+  if (isJSType(check.type)) {
+    if (!jsEngine) {
+      throw new Error(
+        `JavaScript assertion "${check.type}" requires a JavaScript execution environment. Ensure the lab entry points to a .js or .html file.`
+      );
+    }
+    const assertion = assertions[check.type];
+    if (!assertion) {
+      throw new Error(
+        `Unsupported assertion type: ${check.type}`
+      );
+    }
+    return assertion(jsEngine, requirement);
   }
 
   const $ = load(html);
 
-  const assertion =
-    assertions[check.type];
+  const assertion = assertions[check.type];
 
   if (!assertion) {
     throw new Error(
@@ -54,8 +70,5 @@ export function executeRequirement(
     );
   }
 
-  return assertion(
-    $,
-    requirement
-  );
+  return assertion($, requirement);
 }

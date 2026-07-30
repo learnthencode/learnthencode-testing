@@ -1,0 +1,8 @@
+{
+  "id": "js-variables",
+  "title": "JavaScript Variables",
+  "lesson": "lesson-03",
+  "language": "javascript",
+  "entry": "starter/script.js",
+  "version": "1.0.0"
+}

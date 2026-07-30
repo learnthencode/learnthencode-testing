@@ -1,27 +1,12 @@
 import { loadTests } from "../providers/local-provider.js";
 import { loadRequirements } from "./load-requirements.js";
 import { loadHTML } from "./load-html.js";
-import { executeRequirement } from "./execute-requirements.js";
+import { executeRequirement, isJSType } from "./execute-requirements.js";
 import { createResultCollection } from "./results.js";
 import { loadLab } from "./lab.js";
+import { createJSEngine, extractScriptCode } from "./js-execution-engine.js";
 import path from "path";
 
-
-/**
- * Runs all requirements for a given lab directory and returns
- * a result collection containing pass/fail outcomes and scores.
- *
- * Pipeline:
- *   1. Load and validate the lab configuration (learnthencode.json).
- *   2. Locate the hidden requirements.json from the private-tests directory.
- *   3. Parse and validate all requirements.
- *   4. Load the learner's HTML entry file.
- *   5. Execute each requirement assertion against the HTML.
- *   6. Return the collected results.
- *
- * @param {string} labDirectory - Absolute path to the lab directory.
- * @returns {object} A result collection with results and a summary().
- */
 export function run(labDirectory) {
     const lab = loadLab(labDirectory);
 
@@ -30,34 +15,50 @@ export function run(labDirectory) {
         "private-tests"
     );
 
-    const requirementsFile = loadTests(
-        testsDirectory
-    );
+    const requirementsFile = loadTests(testsDirectory);
 
-    const labDefinition =
-        loadRequirements(
-            requirementsFile
-        );
+    const labDefinition = loadRequirements(requirementsFile);
 
-    const requirements =
-        labDefinition.requirements;
+    const requirements = labDefinition.requirements;
 
-    const htmlFilePath = path.join(
+    const entryFilePath = path.join(
         labDirectory,
         lab.entry
     );
 
-    const html = loadHTML(htmlFilePath);
+    const entryContent = loadHTML(entryFilePath);
+    const entryExt = path.extname(lab.entry).toLowerCase();
 
-    const results =
-        createResultCollection();
+    const hasJSRequirements = requirements.some(
+      r => isJSType(r.check.type)
+    );
+
+    let html = entryContent;
+    let jsEngine = null;
+
+    if (hasJSRequirements) {
+      if (entryExt === ".html") {
+        const code = extractScriptCode(entryContent, path.dirname(entryFilePath));
+        html = entryContent;
+        if (code) {
+          jsEngine = createJSEngine({ code, html });
+        }
+      } else if (entryExt === ".js") {
+        const code = entryContent;
+        html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body></body></html>";
+        jsEngine = createJSEngine({ code, html });
+      }
+    }
+
+    const results = createResultCollection();
 
     for (const requirement of requirements) {
         results.add(
             executeRequirement(
                 requirement,
                 html,
-                htmlFilePath
+                entryFilePath,
+                jsEngine
             )
         );
     }

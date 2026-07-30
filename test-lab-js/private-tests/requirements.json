@@ -1,0 +1,32 @@
+{
+  "requirements": [
+    {
+      "id": "js-001",
+      "name": "Username variable exists",
+      "points": 1,
+      "check": {
+        "type": "variable",
+        "name": "username"
+      }
+    },
+    {
+      "id": "js-002",
+      "name": "Username has correct value",
+      "points": 1,
+      "check": {
+        "type": "variable",
+        "name": "username",
+        "value": "John"
+      }
+    },
+    {
+      "id": "js-003",
+      "name": "Age variable exists",
+      "points": 1,
+      "check": {
+        "type": "variable",
+        "name": "age"
+      }
+    }
+  ]
+}

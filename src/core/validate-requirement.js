@@ -1,17 +1,15 @@
-/**
- * Validates a single requirement object from requirements.json.
- *
- * Required fields: name, points, check.
- * - `points` must be a number (supports fractional values).
- * - `check`  must be an object defining the assertion to run.
- *
- * For CSS assertions (check.type === "css"), at minimum either:
- *   - check.property + check.value  (single property assertion)
- *   - check.styles                  (grouped styles assertion)
- *
- * @param {object} requirement - The requirement object to validate.
- * @throws {Error} If a required field is missing or has the wrong type.
- */
+const JS_ASSERTION_TYPES = new Set([
+  "variable",
+  "function",
+  "array",
+  "object",
+  "dom",
+  "event",
+  "fetch",
+  "json",
+  "console",
+]);
+
 export function validateRequirement(requirement) {
 
   const requiredFields = [
@@ -21,31 +19,23 @@ export function validateRequirement(requirement) {
   ];
 
   for (const field of requiredFields) {
-
     if (!(field in requirement)) {
-
       throw new Error(
         `Invalid requirement. Missing required property: "${field}".`
       );
-
     }
-
   }
 
   if (typeof requirement.points !== "number") {
-
     throw new Error(
       `"points" must be a number.`
     );
-
   }
 
   if (typeof requirement.check !== "object") {
-
     throw new Error(
       `"check" must be an object.`
     );
-
   }
 
   const { check } = requirement;
@@ -63,4 +53,104 @@ export function validateRequirement(requirement) {
     }
   }
 
+  if (JS_ASSERTION_TYPES.has(check.type)) {
+    validateJSRequirement(check);
+  }
+
+}
+
+function validateJSRequirement(check) {
+  switch (check.type) {
+    case "variable":
+      if (!check.name) {
+        throw new Error(
+          `Variable assertion must include "name".`
+        );
+      }
+      break;
+
+    case "function":
+      if (!check.name) {
+        throw new Error(
+          `Function assertion must include "name".`
+        );
+      }
+      break;
+
+    case "array":
+      if (!check.name) {
+        throw new Error(
+          `Array assertion must include "name".`
+        );
+      }
+      break;
+
+    case "object":
+      if (!check.name) {
+        throw new Error(
+          `Object assertion must include "name".`
+        );
+      }
+      break;
+
+    case "dom":
+      if (!check.assertion) {
+        throw new Error(
+          `DOM assertion must include "assertion".`
+        );
+      }
+      if (!check.selector && check.assertion !== "elementCreated") {
+        throw new Error(
+          `DOM assertion must include "selector".`
+        );
+      }
+      break;
+
+    case "event":
+      if (!check.assertion) {
+        throw new Error(
+          `Event assertion must include "assertion" (e.g., "click").`
+        );
+      }
+      if (!check.selector) {
+        throw new Error(
+          `Event assertion must include "selector".`
+        );
+      }
+      break;
+
+    case "fetch":
+      break;
+
+    case "json":
+      if (!check.assertion) {
+        throw new Error(
+          `JSON assertion must include "assertion" ("parse" or "stringify").`
+        );
+      }
+      if (check.assertion !== "parse" && check.assertion !== "stringify") {
+        throw new Error(
+          `JSON assertion "assertion" must be "parse" or "stringify", got "${check.assertion}".`
+        );
+      }
+      break;
+
+    case "console":
+      if (!check.assertion) {
+        throw new Error(
+          `Console assertion must include "assertion" ("logContains", "logEquals", "logCount", or "logOrder").`
+        );
+      }
+      if (!["logContains", "logEquals", "logCount", "logOrder"].includes(check.assertion)) {
+        throw new Error(
+          `Console assertion "assertion" must be "logContains", "logEquals", "logCount", or "logOrder", got "${check.assertion}".`
+        );
+      }
+      if (check.value === undefined || check.value === null) {
+        throw new Error(
+          `Console assertion must include "value".`
+        );
+      }
+      break;
+  }
 }

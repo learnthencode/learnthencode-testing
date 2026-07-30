@@ -5,19 +5,8 @@ import { textContains } from "./text.js";
 import { elementCount } from "./count.js";
 import { structureExists } from "./structure.js";
 import { cssAssertion } from "./css/index.js";
+import { jsAssertions } from "./javascript/index.js";
 
-
-/**
- * Registry mapping requirement check `type` strings to their
- * assertion functions.
- *
- * When a requirement is executed, `executeRequirement` looks up the
- * function by `check.type` from this object. To add a new assertion
- * type, implement the function and add it here.
- *
- * Each assertion function has the signature:
- *   ($ : CheerioAPI, requirement : object) => object
- */
 export const assertions = {
   element:   elementExists,
   attribute: attributeExists,
@@ -26,4 +15,5 @@ export const assertions = {
   count:     elementCount,
   structure: structureExists,
   css:       cssAssertion,
+  ...jsAssertions,
 };
