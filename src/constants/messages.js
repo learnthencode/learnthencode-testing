@@ -2,7 +2,7 @@ export const MESSAGES = {
   banner: `
 ========================================
  LearnThenCode Testing Framework
- Version 1.2.1
+ Version 1.2.2
 ========================================
 `,
 
@@ -26,7 +26,7 @@ Options:
 `,
 
   version:
-    "LearnThenCode Testing Framework v1.2.1",
+    "LearnThenCode Testing Framework v1.2.2",
 
   unknownCommand:
     "Unknown command. Use --help to see available commands."
