@@ -82,12 +82,7 @@ function validateJSRequirement(check) {
           `Function assertion must include "name".`
         );
       }
-      if (check.assertion !== undefined) {
-        if (!ASYNC_FUNCTION_ASSERTIONS.has(check.assertion)) {
-          throw new Error(
-            `Function assertion "assertion" must be one of "returnsPromise", "resolves", "rejects", or "rejectsWith", got "${check.assertion}".`
-          );
-        }
+      if (ASYNC_FUNCTION_ASSERTIONS.has(check.assertion)) {
         if (
           (check.assertion === "resolves" ||
             check.assertion === "rejectsWith") &&

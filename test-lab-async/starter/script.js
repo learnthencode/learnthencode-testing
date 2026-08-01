@@ -1,3 +1,7 @@
+function greet() {
+  return "hello";
+}
+
 async function getUser() {
   return { id: 1, name: "John" };
 }

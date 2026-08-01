@@ -64,18 +64,24 @@ test("validates async assertions with args", () => {
   validateRequirement(makeReq({ type: "function", assertion: "resolves", name: "getData", args: [1], value: 2 }));
 });
 
-test("rejects unknown async assertions", () => {
+test("accepts synchronous function assertion fields like \"exists\"", () => {
+  validateRequirement(makeReq({ type: "function", assertion: "exists", name: "greet" }));
+  validateRequirement(makeReq({ type: "function", assertion: "exists", name: "greet", hasParams: true }));
+});
+
+test("treats unknown assertion values as synchronous (v1.2.0 behavior)", () => {
+  validateRequirement(makeReq({ type: "function", assertion: "whatever", name: "greet" }));
+});
+
+test("unknown assertion values still require name", () => {
   assertThrows(
-    () => validateRequirement(makeReq({ type: "function", assertion: "notAsync", name: "getData" })),
-    "must be one of \"returnsPromise\", \"resolves\", \"rejects\", or \"rejectsWith\""
+    () => validateRequirement(makeReq({ type: "function", assertion: "exists" })),
+    "must include \"name\""
   );
 });
 
-test("rejects empty-string assertion", () => {
-  assertThrows(
-    () => validateRequirement(makeReq({ type: "function", assertion: "", name: "getData" })),
-    "must be one of"
-  );
+test("empty-string assertion treated as synchronous and accepted", () => {
+  validateRequirement(makeReq({ type: "function", assertion: "", name: "getData" }));
 });
 
 test("rejects resolves assertion without name", () => {

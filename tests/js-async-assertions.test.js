@@ -649,6 +649,34 @@ test("resolves: fails when function is not a function", async () => {
   assert(result.message.includes("not a function"), "message should say it is not a function");
 });
 
+test("sync function assertions with an assertion field still work", async () => {
+  const engine = createJSEngine({
+    code: "function greet() { return 'hello'; }",
+    html: "",
+  });
+  const existsReq = makeReq("sync-001", {
+    type: "function",
+    assertion: "exists",
+    name: "greet",
+  });
+  const existsResult = await functionAssertion(engine, existsReq);
+  assert(existsResult.passed, "assertion \"exists\" should pass when function exists");
+
+  const returnsReq = makeReq("sync-002", {
+    type: "function",
+    assertion: "exists",
+    name: "add",
+    args: [2, 3],
+    returns: 5,
+  });
+  const missingEngine = createJSEngine({
+    code: "function add(a, b) { return a + b; }",
+    html: "",
+  });
+  const returnsResult = await functionAssertion(missingEngine, returnsReq);
+  assert(returnsResult.passed, "sync return-value check should still work alongside assertion field");
+});
+
 test("multiple async assertions: several functions evaluated in one engine", async () => {
   const engine = createJSEngine({
     code: `

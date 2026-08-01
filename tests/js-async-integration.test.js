@@ -34,13 +34,17 @@ function makeReq(id, check) {
 
 console.log("\nJS Async Integration Tests\n");
 
-test("run: executes all async requirements on the async lab", async () => {
+test("run: executes async and sync assertions on the async lab", async () => {
   const results = await run(LAB_ASYNC);
   const summary = results.summary();
-  assert(summary.total === 6, `expected 6 requirements, got ${summary.total}`);
-  assert(summary.passed === 6, `expected 6 passed, got ${summary.passed}`);
+  assert(summary.total === 7, `expected 7 requirements, got ${summary.total}`);
+  assert(summary.passed === 7, `expected 7 passed, got ${summary.passed}`);
   assert(summary.failed === 0, "expected no failures");
   assert(summary.percentage === 100, "expected 100% score");
+
+  const syncResult = results.results.find(r => r.id === "async-000");
+  assert(syncResult, "sync assertion with \"exists\" should be present");
+  assert(syncResult.passed, "sync assertion with \"exists\" should pass");
 });
 
 test("run: existing synchronous JS lab still passes unchanged", async () => {

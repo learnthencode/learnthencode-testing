@@ -11,6 +11,16 @@
       }
     },
     {
+      "id": "async-000",
+      "name": "Sync function assertion with assertion field still passes",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "exists",
+        "name": "greet"
+      }
+    },
+    {
       "id": "async-002",
       "name": "resolves compares a primitive resolved value",
       "points": 5,

@@ -663,6 +663,7 @@ Notes:
 - A synchronous throw or a non-Promise return value produces a clear failure message rather than a crash.
 - A synchronous throw is **not** treated as a Promise rejection.
 - Synchronous and asynchronous assertions can be mixed freely within the same requirements file and the same test run.
+- Function assertions with any other `assertion` value (e.g. `"exists"`) — or none at all — behave exactly as in v1.2.0: the field is preserved for the synchronous `function` assertion (existence, `args` + `returns`, `hasParams`).
 
 ---
 
