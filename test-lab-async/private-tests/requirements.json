@@ -1,0 +1,71 @@
+{
+  "requirements": [
+    {
+      "id": "async-001",
+      "name": "returnsPromise detects a Promise-returning function",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "returnsPromise",
+        "name": "returnsPromise"
+      }
+    },
+    {
+      "id": "async-002",
+      "name": "resolves compares a primitive resolved value",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "resolves",
+        "name": "fetchMessage",
+        "value": "Hello"
+      }
+    },
+    {
+      "id": "async-003",
+      "name": "resolves deep-compares an object",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "resolves",
+        "name": "getUser",
+        "value": {
+          "id": 1,
+          "name": "John"
+        }
+      }
+    },
+    {
+      "id": "async-004",
+      "name": "resolves deep-compares an array",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "resolves",
+        "name": "getNumbers",
+        "value": [1, 2, 3]
+      }
+    },
+    {
+      "id": "async-005",
+      "name": "rejects passes when the promise rejects",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "rejects",
+        "name": "failRequest"
+      }
+    },
+    {
+      "id": "async-006",
+      "name": "rejectsWith matches the rejection message",
+      "points": 5,
+      "check": {
+        "type": "function",
+        "assertion": "rejectsWith",
+        "name": "waitAndFail",
+        "value": "Network Error"
+      }
+    }
+  ]
+}

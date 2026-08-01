@@ -37,7 +37,7 @@ export async function handleCommand(args) {
     // Throws if the current directory is not a valid LearnThenCode lab
     const labDirectory = detectLab();
 
-    const results = run(labDirectory);
+    const results = await run(labDirectory);
 
     report(results);
 

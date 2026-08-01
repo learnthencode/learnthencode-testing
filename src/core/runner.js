@@ -7,7 +7,7 @@ import { loadLab } from "./lab.js";
 import { createJSEngine, extractScriptCode } from "./js-execution-engine.js";
 import path from "path";
 
-export function run(labDirectory) {
+export async function run(labDirectory) {
     const lab = loadLab(labDirectory);
 
     const testsDirectory = path.join(
@@ -54,7 +54,7 @@ export function run(labDirectory) {
 
     for (const requirement of requirements) {
         results.add(
-            executeRequirement(
+            await executeRequirement(
                 requirement,
                 html,
                 entryFilePath,

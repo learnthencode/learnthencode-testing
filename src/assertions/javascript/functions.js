@@ -1,8 +1,16 @@
 import { expect } from "../expect.js";
+import {
+  asyncFunctionAssertion,
+  isAsyncFunctionAssertion,
+} from "./async.js";
 
-export function functionAssertion(engine, requirement) {
+export function functionAssertion(engine, requirement, options) {
   const { check } = requirement;
-  const { name, args, returns, hasParams } = check;
+  const { assertion, name, args, returns, hasParams } = check;
+
+  if (isAsyncFunctionAssertion(assertion)) {
+    return asyncFunctionAssertion(engine, requirement, options);
+  }
 
   if (engine.executionError) {
     return expect({

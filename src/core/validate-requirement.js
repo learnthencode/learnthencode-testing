@@ -10,6 +10,13 @@ const JS_ASSERTION_TYPES = new Set([
   "console",
 ]);
 
+const ASYNC_FUNCTION_ASSERTIONS = new Set([
+  "returnsPromise",
+  "resolves",
+  "rejects",
+  "rejectsWith",
+]);
+
 export function validateRequirement(requirement) {
 
   const requiredFields = [
@@ -74,6 +81,22 @@ function validateJSRequirement(check) {
         throw new Error(
           `Function assertion must include "name".`
         );
+      }
+      if (check.assertion !== undefined) {
+        if (!ASYNC_FUNCTION_ASSERTIONS.has(check.assertion)) {
+          throw new Error(
+            `Function assertion "assertion" must be one of "returnsPromise", "resolves", "rejects", or "rejectsWith", got "${check.assertion}".`
+          );
+        }
+        if (
+          (check.assertion === "resolves" ||
+            check.assertion === "rejectsWith") &&
+          check.value === undefined
+        ) {
+          throw new Error(
+            `Function assertion "${check.assertion}" must include "value".`
+          );
+        }
       }
       break;
 

@@ -1,0 +1,8 @@
+{
+  "id": "js-async",
+  "title": "JavaScript Async",
+  "lesson": "lesson-04",
+  "language": "javascript",
+  "entry": "starter/script.js",
+  "version": "1.0.0"
+}

@@ -85,7 +85,7 @@ learnthencode-test --version
 ```
 ========================================
  LearnThenCode Testing Framework
- Version 1.2.0
+ Version 1.2.1
 ========================================
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -564,6 +564,108 @@ Works with both regular functions and arrow functions.
 
 ---
 
+#### `function` — Async Assertions (v1.2.1)
+
+The `function` assertion type also supports asynchronous JavaScript. Each async assertion calls the named function, awaits the returned Promise (when one is returned), and applies a timeout so tests never hang forever.
+
+> **Timeout:** If a Promise never settles, the assertion fails after **3000 milliseconds** by default with a learner-friendly message. The default is configured internally in `src/constants/async.js` so future framework versions can adjust it without changing any assertion schema.
+
+##### `returnsPromise` — Function Returns a Promise
+
+Passes only if calling the function returns a Promise (including async functions).
+
+```json
+{
+  "type": "function",
+  "assertion": "returnsPromise",
+  "name": "getData"
+}
+```
+
+##### `resolves` — Promise Resolves to Expected Value
+
+Calls the function, awaits the returned Promise, and compares the resolved value. Primitive values, objects, and arrays are compared with deep equality.
+
+```json
+{
+  "type": "function",
+  "assertion": "resolves",
+  "name": "getData",
+  "value": "Hello"
+}
+```
+
+With an object value:
+
+```json
+{
+  "type": "function",
+  "assertion": "resolves",
+  "name": "getData",
+  "value": {
+    "id": 1,
+    "name": "John"
+  }
+}
+```
+
+With an array value:
+
+```json
+{
+  "type": "function",
+  "assertion": "resolves",
+  "name": "getData",
+  "value": [1, 2, 3]
+}
+```
+
+##### `rejects` — Promise Rejects
+
+Passes only when the Promise rejects.
+
+```json
+{
+  "type": "function",
+  "assertion": "rejects",
+  "name": "getData"
+}
+```
+
+##### `rejectsWith` — Promise Rejects with Expected Message
+
+Passes only when the Promise rejects with the expected error message.
+
+```json
+{
+  "type": "function",
+  "assertion": "rejectsWith",
+  "name": "getData",
+  "value": "Network Error"
+}
+```
+
+All async assertions also support `args` for passing arguments to the function being tested:
+
+```json
+{
+  "type": "function",
+  "assertion": "resolves",
+  "name": "fetchPage",
+  "args": [2],
+  "value": "Page 2"
+}
+```
+
+Notes:
+
+- Async assertions work with regular functions, async functions, and any function that returns a Promise.
+- A synchronous throw or a non-Promise return value produces a clear failure message rather than a crash.
+- A synchronous throw is **not** treated as a Promise rejection.
+- Synchronous and asynchronous assertions can be mixed freely within the same requirements file and the same test run.
+
+---
+
 #### `array` — Array Exists, Has Length, or Contains Values
 
 Passes if the named variable is an array and optionally matches length/content constraints.
@@ -885,10 +987,11 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
-│   │   ├── javascript/         ← JavaScript assertions (v1.2.0)
+│   │   ├── javascript/         ← JavaScript assertions (v1.2.1)
 │   │   │   ├── index.js
 │   │   │   ├── variables.js
 │   │   │   ├── functions.js
+│   │   │   ├── async.js        ← Async assertions (v1.2.1)
 │   │   │   ├── arrays.js
 │   │   │   ├── objects.js
 │   │   │   ├── dom.js
@@ -922,12 +1025,13 @@ learnthencode-testing/
 │   │   ├── index.js
 │   │   └── parser.js
 │   ├── constants/
+│   │   ├── async.js            ← Async defaults (v1.2.1)
 │   │   └── messages.js         ← CLI output messages
 │   ├── core/                   ← Core runner pipeline
 │   │   ├── detect-lab.js
 │   │   ├── discover-tests.js
 │   │   ├── execute-requirements.js
-│   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.0)
+│   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.1)
 │   │   ├── lab.js
 │   │   ├── load-html.js
 │   │   ├── load-requirements.js
@@ -938,6 +1042,11 @@ learnthencode-testing/
 │   ├── providers/
 │   │   ├── css-renderer.js     ← CSS rendering engine (jsdom)
 │   │   └── local-provider.js   ← Loads requirements from the local filesystem
+│   ├── utils/
+│   │   ├── async.js            ← Promise timeout race (v1.2.1)
+│   │   ├── deep-equal.js       ← Deep equality (v1.2.1)
+│   │   ├── filesystem.js
+│   │   └── logger.js
 │   └── reporter/
 │       ├── colors.js           ← ANSI colour helpers
 │       └── console-reporter.js ← Formats and prints test results
