@@ -4,7 +4,7 @@
 
 `learnthencode-testing` provides a declarative, JSON-driven way to validate learner HTML, CSS, and JavaScript submissions against a set of requirements. It ships with a CLI, a rich set of built-in assertion types, and a color-coded console reporter designed for an educational environment.
 
-For HTML labs, the framework uses [Cheerio](https://cheerio.js.org/) to parse and query the DOM. For CSS labs, it uses [jsdom](https://github.com/jsdom/jsdom) to render the HTML, load stylesheets, apply styles, and validate **computed styles** — giving accurate pass/fail feedback that matches what the learner sees in the browser. For JavaScript labs, it uses a sandboxed execution engine built on Node.js `vm` and `jsdom` to safely evaluate student code and inspect variables, functions, arrays, objects, DOM manipulation, events, fetch calls, and JSON operations.
+For HTML labs, the framework uses [Cheerio](https://cheerio.js.org/) to parse and query the DOM. For CSS labs, it uses [jsdom](https://github.com/jsdom/jsdom) to render the HTML, load stylesheets, apply styles, and validate **computed styles** — giving accurate pass/fail feedback that matches what the learner sees in the browser. For JavaScript labs, it uses a sandboxed execution engine built on Node.js `vm` and `jsdom` to safely evaluate student code and inspect variables, functions, arrays, objects, DOM manipulation, events, fetch calls, and JSON operations. HTML entries that contain JavaScript assertions are loaded into the same jsdom environment, so scripts run exactly as they would in a browser before any assertion is evaluated (v1.2.3).
 
 ---
 
@@ -85,7 +85,7 @@ learnthencode-test --version
 ```
 ========================================
  LearnThenCode Testing Framework
- Version 1.2.1
+ Version 1.2.3
 ========================================
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -736,7 +736,7 @@ With property value check:
 
 #### `dom` — DOM State After JavaScript Execution
 
-Validates the state of the DOM after JavaScript has executed. Useful for testing DOM manipulation.
+Validates the state of the DOM after JavaScript has executed. DOM assertions query the **live jsdom document** shared with the JavaScript execution engine — the exact same instance the student's scripts ran against (v1.2.3). Useful for testing DOM manipulation.
 
 ```json
 {
@@ -948,6 +948,26 @@ JavaScript labs can also use an HTML entry file that includes `<script>` tags:
 
 ---
 
+#### HTML Entry Execution (v1.2.3)
+
+Whenever a lab contains at least one JavaScript assertion — `variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`, or `console` — the framework automatically initializes the JavaScript execution engine from the lab entry file. No assertion type needs special handling.
+
+For an HTML entry such as `starter/index.html`, the lifecycle is:
+
+1. **Load** — the entry file is read from disk.
+2. **Initialize jsdom** — the HTML is loaded into a single [jsdom](https://github.com/jsdom/jsdom) instance (same as the browser environment used elsewhere in the framework). The instance exposes `window`, `document`, `HTMLElement`, `Element`, `Node`, `Event`, `CustomEvent`, `navigator`, `localStorage`, and `sessionStorage` to student code.
+3. **Extract scripts** — all `<script>` tags are collected in document order. Linked scripts (`<script src="...">`) are resolved relative to the HTML file and read from disk; inline scripts are taken as-is. Empty script tags are skipped.
+4. **Execute exactly once** — the combined script code runs once in the sandboxed `vm` context. All scripts share the same global scope, so a variable declared by one script is visible to later ones.
+5. **Evaluate assertions** — every JavaScript assertion runs against the **same** jsdom instance and sandbox. DOM assertions query the live `document` after the student's scripts have run; no second DOM or second engine is created.
+
+Notes:
+
+- An HTML entry with **no JavaScript at all** still initializes the engine, so DOM assertions can inspect static markup.
+- If the student's code throws at runtime, the error is captured on the engine (`executionError`) and every assertion fails with a clear "JavaScript error prevented evaluation" message instead of crashing the test run.
+- Pure HTML labs (no JavaScript assertions) are unaffected — they keep using Cheerio exactly as before.
+
+---
+
 ##### Programmatic Expect API
 
 For `.test.js` files, a chainable expect API is available:
@@ -1026,13 +1046,14 @@ learnthencode-testing/
 │   │   ├── index.js
 │   │   └── parser.js
 │   ├── constants/
+│   │   ├── assertion-types.js   ← JS/CSS assertion type registry (v1.2.3)
 │   │   ├── async.js            ← Async defaults (v1.2.1)
 │   │   └── messages.js         ← CLI output messages
 │   ├── core/                   ← Core runner pipeline
 │   │   ├── detect-lab.js
 │   │   ├── discover-tests.js
 │   │   ├── execute-requirements.js
-│   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.1)
+│   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.1, HTML entries v1.2.3)
 │   │   ├── lab.js
 │   │   ├── load-html.js
 │   │   ├── load-requirements.js

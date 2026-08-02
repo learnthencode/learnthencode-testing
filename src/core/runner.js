@@ -1,10 +1,11 @@
 import { loadTests } from "../providers/local-provider.js";
 import { loadRequirements } from "./load-requirements.js";
 import { loadHTML } from "./load-html.js";
-import { executeRequirement, isJSType } from "./execute-requirements.js";
+import { executeRequirement } from "./execute-requirements.js";
 import { createResultCollection } from "./results.js";
 import { loadLab } from "./lab.js";
-import { createJSEngine, extractScriptCode } from "./js-execution-engine.js";
+import { createJSEngine, createJSEngineFromHTML } from "./js-execution-engine.js";
+import { isJSType } from "../constants/assertion-types.js";
 import path from "path";
 
 export async function run(labDirectory) {
@@ -36,13 +37,17 @@ export async function run(labDirectory) {
     let html = entryContent;
     let jsEngine = null;
 
+    // Whenever at least one JavaScript assertion exists, the execution
+    // engine is initialized from the lab entry. HTML entries always
+    // produce an engine — jsdom loads the markup and runs any linked or
+    // inline scripts exactly once — so DOM assertions work even for
+    // entries that contain no JavaScript at all.
     if (hasJSRequirements) {
       if (entryExt === ".html") {
-        const code = extractScriptCode(entryContent, path.dirname(entryFilePath));
-        html = entryContent;
-        if (code) {
-          jsEngine = createJSEngine({ code, html });
-        }
+        jsEngine = createJSEngineFromHTML({
+          html: entryContent,
+          htmlFilePath: entryFilePath,
+        });
       } else if (entryExt === ".js") {
         const code = entryContent;
         html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body></body></html>";

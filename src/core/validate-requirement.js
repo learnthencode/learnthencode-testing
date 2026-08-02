@@ -1,14 +1,4 @@
-const JS_ASSERTION_TYPES = new Set([
-  "variable",
-  "function",
-  "array",
-  "object",
-  "dom",
-  "event",
-  "fetch",
-  "json",
-  "console",
-]);
+import { JS_ASSERTION_TYPES } from "../constants/assertion-types.js";
 
 const ASYNC_FUNCTION_ASSERTIONS = new Set([
   "returnsPromise",

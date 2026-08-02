@@ -1,5 +1,39 @@
 import { expect } from "../expect.js";
 
+/**
+ * Runs a selector through the live DOM.
+ *
+ * Invalid selectors throw a SyntaxError in browsers, so they are
+ * captured and reported as a failed assertion instead of crashing the
+ * whole test run.
+ *
+ * @param {Document} doc - The jsdom document (shared with the engine).
+ * @param {string} selector - The CSS selector to query.
+ * @returns {{ element: Element|null, error: string|null }}
+ */
+function query(doc, selector) {
+  try {
+    return { element: doc.querySelector(selector), error: null };
+  } catch (e) {
+    return { element: null, error: e.message };
+  }
+}
+
+/**
+ * Returns a failed result for a selector that could not be queried.
+ *
+ * @param {object} requirement
+ * @param {string} selector
+ * @returns {object}
+ */
+function invalidSelector(requirement, selector) {
+  return expect({
+    requirement,
+    condition: false,
+    message: `Invalid selector "${selector}" for DOM assertion.`,
+  });
+}
+
 export function domAssertion(engine, requirement) {
   const { check } = requirement;
   const { assertion, selector, value, className, tagName, parent } = check;
@@ -16,7 +50,9 @@ export function domAssertion(engine, requirement) {
 
   switch (assertion) {
     case "elementExists": {
-      const exists = !!doc.querySelector(selector);
+      const { element, error } = query(doc, selector);
+      if (error) return invalidSelector(requirement, selector);
+      const exists = !!element;
       if (!exists) {
         return expect({
           requirement,
@@ -28,7 +64,9 @@ export function domAssertion(engine, requirement) {
     }
 
     case "elementRemoved": {
-      const exists = !!doc.querySelector(selector);
+      const { element, error } = query(doc, selector);
+      if (error) return invalidSelector(requirement, selector);
+      const exists = !!element;
       if (exists) {
         return expect({
           requirement,
@@ -40,7 +78,8 @@ export function domAssertion(engine, requirement) {
     }
 
     case "textUpdated": {
-      const el = doc.querySelector(selector);
+      const { element: el, error } = query(doc, selector);
+      if (error) return invalidSelector(requirement, selector);
       if (!el) {
         return expect({
           requirement,
@@ -60,7 +99,8 @@ export function domAssertion(engine, requirement) {
     }
 
     case "classAdded": {
-      const el = doc.querySelector(selector);
+      const { element: el, error } = query(doc, selector);
+      if (error) return invalidSelector(requirement, selector);
       if (!el) {
         return expect({
           requirement,
@@ -79,7 +119,8 @@ export function domAssertion(engine, requirement) {
     }
 
     case "classRemoved": {
-      const el = doc.querySelector(selector);
+      const { element: el, error } = query(doc, selector);
+      if (error) return invalidSelector(requirement, selector);
       if (!el) {
         return expect({
           requirement,
@@ -105,11 +146,12 @@ export function domAssertion(engine, requirement) {
           message: `Assertion "elementCreated" requires "tagName" or "selector".`,
         });
       }
-      let query = selector;
-      if (tagName && !query) {
-        query = tagName;
+      let checkQuery = selector;
+      if (tagName && !checkQuery) {
+        checkQuery = tagName;
         if (parent) {
-          const parentEl = doc.querySelector(parent);
+          const { element: parentEl, error: parentError } = query(doc, parent);
+          if (parentError) return invalidSelector(requirement, parent);
           if (!parentEl) {
             return expect({
               requirement,
@@ -128,12 +170,14 @@ export function domAssertion(engine, requirement) {
           return expect({ requirement, condition: true });
         }
       }
-      const exists = !!doc.querySelector(query);
+      const { element, error } = query(doc, checkQuery);
+      if (error) return invalidSelector(requirement, checkQuery);
+      const exists = !!element;
       if (!exists) {
         return expect({
           requirement,
           condition: false,
-          message: `Expected element "${query}" to be created in the DOM.`,
+          message: `Expected element "${checkQuery}" to be created in the DOM.`,
         });
       }
       return expect({ requirement, condition: true });

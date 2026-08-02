@@ -47,6 +47,8 @@ export function createJSEngine({ code, html }) {
     Node: dom.window.Node,
     Element: dom.window.Element,
     Document: dom.window.Document,
+    localStorage: dom.window.localStorage,
+    sessionStorage: dom.window.sessionStorage,
     console: {
       log: (...args) => consoleOutput.push(args.map(String).join(" ")),
       error: (...args) => consoleOutput.push(args.map(String).join(" ")),
@@ -163,4 +165,25 @@ export function extractScriptCode(html, htmlFilePath) {
   });
 
   return scripts.join("\n");
+}
+
+/**
+ * Creates a JavaScript execution engine from an HTML entry file.
+ *
+ * Unlike a raw code string, an HTML entry carries its own DOM. The
+ * HTML is loaded into jsdom, all linked and inline scripts are
+ * extracted in document order and executed exactly once, and the same
+ * jsdom instance is shared with every JavaScript assertion.
+ *
+ * The engine is always created — even when the HTML contains no
+ * scripts — so DOM assertions can inspect the static markup.
+ *
+ * @param {object} options
+ * @param {string} options.html - The raw HTML entry content.
+ * @param {string} options.htmlFilePath - Absolute path to the HTML file (for resolving external scripts).
+ * @returns {object} The JS execution engine.
+ */
+export function createJSEngineFromHTML({ html, htmlFilePath }) {
+  const code = extractScriptCode(html, htmlFilePath);
+  return createJSEngine({ code, html });
 }

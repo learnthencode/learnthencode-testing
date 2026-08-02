@@ -17,7 +17,7 @@ CLI (bin/learnthencode-test.js)
         -> src/providers/local-provider.js (find private-tests/requirements.json)
         -> src/core/load-requirements.js (read & validate requirements)
         -> src/core/load-html.js (read learner entry file)
-        -> src/core/js-execution-engine.js (create JS sandbox if needed, v1.2.0)
+        -> src/core/js-execution-engine.js (create JS engine when JS assertions exist; HTML entries always create a jsdom instance, v1.2.3)
         -> src/core/execute-requirements.js (run each assertion; may return a Promise)
           -> For HTML assertions: Cheerio parses HTML -> assertion function
           -> For CSS assertions: jsdom renders HTML+CSS -> computed style check
@@ -82,6 +82,19 @@ After execution, the engine exposes:
 - `consoleOutput` — captured console output
 - `document` — the jsdom document (for DOM assertions)
 
+## HTML Entry Execution (v1.2.3)
+
+DOM assertions and every other JavaScript assertion type execute against the **same jsdom instance** that ran the student's scripts. The execution lifecycle for an HTML entry (`"entry": "starter/index.html"`) is:
+
+1. `runner.js` reads the entry HTML and checks the requirements for any JavaScript assertion type (`variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`, `console`) via the shared registry in `src/constants/assertion-types.js`. If at least one exists, the engine is always initialized — even when the HTML contains no scripts at all.
+2. `createJSEngineFromHTML()` (in `js-execution-engine.js`) loads the HTML into a single `JSDOM` instance. The engine exposes a browser-like sandbox: `window`, `document`, `HTMLElement`, `Element`, `Node`, `Event`, `CustomEvent`, `navigator`, `localStorage`, `sessionStorage`, plus timers, events, the mocked `fetch`, intercepted `JSON`, and captured `console`.
+3. `extractScriptCode()` walks `<script>` tags in document order. Linked scripts (`src`) are resolved relative to the HTML file and read from disk; inline scripts are collected as-is. Empty script tags are skipped.
+4. The combined script code executes **exactly once** in a Node `vm` context over the jsdom window. All scripts share one global scope, preserving browser-like declaration order.
+5. Assertions run against the engine: DOM assertions (`dom`, `event`) query the live `document`; `variable`/`function`/`array`/`object` inspect the sandbox; `fetch`/`json`/`console` read the recorded calls and output. No second DOM or second engine is created.
+6. A runtime error in student code is captured on the engine (`executionError`); every JS assertion then fails with a "JavaScript error prevented evaluation" result instead of crashing the run.
+
+Pure HTML labs without JavaScript assertions never create an engine — they continue to parse with Cheerio exactly as before.
+
 ## Asynchronous JavaScript Execution (v1.2.1)
 
 Async support extends the existing `function` assertion type. When `check.assertion` is one of `returnsPromise`, `resolves`, `rejects`, or `rejectsWith`, `javascript/functions.js` delegates to `javascript/async.js` instead of running the synchronous return-value check.
@@ -134,11 +147,13 @@ The async lifecycle is the foundation for future React support without breaking 
 
 Assertions are registered in `src/assertions/index.js` under the `assertions` map. The `check.type` field in requirements.json selects which assertion to execute.
 
+The set of JavaScript and CSS types is defined once in `src/constants/assertion-types.js`. `execute-requirements.js`, `runner.js`, and `validate-requirement.js` all import from it, so registering a new JavaScript type there automatically makes the runner initialize the execution engine when any requirement uses it.
+
 HTML assertions use types like `element`, `attribute`, `text`, `count`, `semantic`, `structure`.
 
 CSS assertions use `type: "css"` and dispatch to sub-modules based on `check.assertion`, `check.property`, or `check.styles` fields.
 
-JavaScript assertions (v1.2.0, async extensions v1.2.1) use dedicated types: `variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`. Each type maps to its own module in `src/assertions/javascript/`.
+JavaScript assertions (v1.2.0, async extensions v1.2.1, HTML entry execution v1.2.3) use dedicated types: `variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`, `console`. Each type maps to its own module in `src/assertions/javascript/`.
 
 ## Value Normalization
 

@@ -1,28 +1,7 @@
 import { load } from "cheerio";
 import { assertions } from "../assertions/index.js";
 import { renderCSS } from "../providers/css-renderer.js";
-
-const CSS_TYPES = new Set(["css"]);
-
-const JS_TYPES = new Set([
-  "variable",
-  "function",
-  "array",
-  "object",
-  "dom",
-  "event",
-  "fetch",
-  "json",
-  "console",
-]);
-
-function isCSSType(type) {
-  return CSS_TYPES.has(type);
-}
-
-function isJSType(type) {
-  return JS_TYPES.has(type);
-}
+import { isCSSType, isJSType } from "../constants/assertion-types.js";
 
 export { isJSType };
 
