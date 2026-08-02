@@ -812,6 +812,77 @@ The `effect` object describes what to check after the event fires:
 
 ---
 
+#### `events` — Event Assertions (v1.2.4)
+
+Verifies how a JavaScript application responds to browser events. All checks run against the same shared jsdom instance that executed the student's code, so listeners registered during page load and DOM updates made by event handlers are visible to every assertion in the lab. Listener registration is tracked by intercepting `addEventListener`/`removeEventListener` inside the test environment — student code is never modified. jsdom's own internal listeners are excluded from tracking, so only listeners registered by the student's code are considered.
+
+##### `listenerExists` — Listener Is Registered
+
+Passes if the element selected by `selector` has at least one registered listener for `event`.
+
+```json
+{
+  "type": "events",
+  "assertion": "listenerExists",
+  "selector": "#myButton",
+  "event": "click"
+}
+```
+
+##### `dispatch` — Dispatch Event and Verify Result
+
+Dispatches `event` on the selected element, then verifies that the element selected by `expect.selector` has `expect.text` as its text content. For keyboard events (`keydown`, `keyup`, `keypress`), the optional `key` is passed to `KeyboardEvent`, so handlers that inspect `event.key` behave as in a real browser.
+
+```json
+{
+  "type": "events",
+  "assertion": "dispatch",
+  "selector": "#myButton",
+  "event": "click",
+  "expect": {
+    "selector": "#output",
+    "text": "Clicked!"
+  }
+}
+```
+
+Keyboard example:
+
+```json
+{
+  "type": "events",
+  "assertion": "dispatch",
+  "selector": "#searchField",
+  "event": "keydown",
+  "key": "Enter",
+  "expect": {
+    "selector": "#result",
+    "text": "Searching..."
+  }
+}
+```
+
+##### `inputValueChanges` — Input Value Changes the App
+
+Sets the selected input's value to `value`, dispatches `input` then `change`, and verifies the expected state.
+
+```json
+{
+  "type": "events",
+  "assertion": "inputValueChanges",
+  "selector": "#nameInput",
+  "value": "Alice",
+  "expect": {
+    "selector": "#message",
+    "text": "Hi Alice"
+  }
+}
+```
+
+The legacy `event` assertion remains fully supported alongside `events`.
+
+---
+
 #### `fetch` — Fetch API Call Verification
 
 Verifies that `fetch()` was called with the expected endpoint and/or HTTP method. No real network requests are made — fetch is mocked.

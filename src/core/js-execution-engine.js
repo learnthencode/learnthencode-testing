@@ -17,6 +17,51 @@ export function createJSEngine({ code, html }) {
   const jsonParseCalls = [];
   const jsonStringifyCalls = [];
 
+  // ---------------------------------------------------------------------------
+  // Event listener tracking
+  //
+  // Browsers do not expose registered listeners, so addEventListener and
+  // removeEventListener are intercepted at the EventTarget level. Every
+  // target (window, document, elements) inherits from EventTarget, so a
+  // single patch covers all of them. Records live only inside the test
+  // environment — student code is never modified.
+  //
+  // Only callbacks created inside the student's vm realm are tracked.
+  // jsdom's internal machinery (for example the DOM selector engine)
+  // lazily registers host-realm listeners on the window, and those must
+  // not pollute the registry. Host functions have the host `Function`
+  // as their constructor; vm functions have the vm realm's `Function`.
+  //
+  //   { target, event, callback }
+  // ---------------------------------------------------------------------------
+  const listenerRegistry = [];
+  const eventTargetPrototype = dom.window.EventTarget.prototype;
+  const originalAddEventListener = eventTargetPrototype.addEventListener;
+  const originalRemoveEventListener = eventTargetPrototype.removeEventListener;
+
+  const isStudentCallback = (callback) =>
+    typeof callback === "function" && callback.constructor !== Function;
+
+  eventTargetPrototype.addEventListener = function (type, callback, options) {
+    if (isStudentCallback(callback)) {
+      listenerRegistry.push({ target: this, event: type, callback });
+    }
+    return originalAddEventListener.call(this, type, callback, options);
+  };
+
+  eventTargetPrototype.removeEventListener = function (type, callback, options) {
+    const index = listenerRegistry.findIndex(
+      (record) =>
+        record.target === this &&
+        record.event === type &&
+        record.callback === callback
+    );
+    if (index !== -1) {
+      listenerRegistry.splice(index, 1);
+    }
+    return originalRemoveEventListener.call(this, type, callback, options);
+  };
+
   const sandbox = Object.assign(Object.create(null), {
     window: dom.window,
     document: dom.window.document,
@@ -104,6 +149,7 @@ export function createJSEngine({ code, html }) {
         consoleOutput,
         jsonParseCalls,
         jsonStringifyCalls,
+        listenerRegistry,
         sandbox,
         executionError: e,
         getValue() {
@@ -111,6 +157,11 @@ export function createJSEngine({ code, html }) {
         },
         evaluate() {
           return { error: e.message };
+        },
+        getListeners(target, eventType) {
+          return listenerRegistry.filter(
+            (record) => record.target === target && record.event === eventType
+          );
         },
       };
     }
@@ -123,6 +174,7 @@ export function createJSEngine({ code, html }) {
     consoleOutput,
     jsonParseCalls,
     jsonStringifyCalls,
+    listenerRegistry,
     sandbox,
     executionError: null,
     getValue(expr) {
@@ -142,6 +194,11 @@ export function createJSEngine({ code, html }) {
       } catch (e) {
         return { error: e.message };
       }
+    },
+    getListeners(target, eventType) {
+      return listenerRegistry.filter(
+        (record) => record.target === target && record.event === eventType
+      );
     },
   };
 }

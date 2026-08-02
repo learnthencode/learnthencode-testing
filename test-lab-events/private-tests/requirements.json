@@ -1,0 +1,61 @@
+{
+  "requirements": [
+    {
+      "id": "evt-001",
+      "name": "Click button has a click listener",
+      "points": 1,
+      "check": {
+        "type": "events",
+        "assertion": "listenerExists",
+        "selector": "#click-button",
+        "event": "click"
+      }
+    },
+    {
+      "id": "evt-002",
+      "name": "Clicking the button updates the output",
+      "points": 1,
+      "check": {
+        "type": "events",
+        "assertion": "dispatch",
+        "selector": "#click-button",
+        "event": "click",
+        "expect": {
+          "selector": "#output",
+          "text": "Clicked"
+        }
+      }
+    },
+    {
+      "id": "evt-003",
+      "name": "Name input updates the message",
+      "points": 1,
+      "check": {
+        "type": "events",
+        "assertion": "inputValueChanges",
+        "selector": "#name-input",
+        "value": "Alice",
+        "expect": {
+          "selector": "#message",
+          "text": "Hi Alice"
+        }
+      }
+    },
+    {
+      "id": "evt-004",
+      "name": "Enter key triggers a search",
+      "points": 1,
+      "check": {
+        "type": "events",
+        "assertion": "dispatch",
+        "selector": "#search-field",
+        "event": "keydown",
+        "key": "Enter",
+        "expect": {
+          "selector": "#search-result",
+          "text": "Enter pressed"
+        }
+      }
+    }
+  ]
+}

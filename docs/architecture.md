@@ -81,16 +81,24 @@ After execution, the engine exposes:
 - `jsonParseCalls` / `jsonStringifyCalls` — recorded JSON method calls
 - `consoleOutput` — captured console output
 - `document` — the jsdom document (for DOM assertions)
+- `listenerRegistry` — recorded student event listeners
+- `getListeners(target, eventType)` — listeners recorded for a specific target/event pair
+
+### Event Listener Tracking (v1.2.4)
+
+Browsers do not expose registered listeners, so `events` assertions need their own tracking. `js-execution-engine.js` intercepts `addEventListener` and `removeEventListener` on the shared `EventTarget.prototype` — every target (window, document, elements) inherits from it, so one patch covers all of them. Records are `{ target, event, callback }` and live only inside the test environment; student code is never modified.
+
+Only callbacks created inside the student's `vm` realm are tracked. jsdom's internal machinery (for example the `@asamuzakjp/dom-selector` engine, which lazily registers window listeners on the first selector query) registers host-realm functions, and those would pollute the registry — the realm check (`callback.constructor !== Function`) keeps the registry limited to listeners the student actually registered. A matching `removeEventListener` call removes the record, so `listenerExists` fails after a listener has been removed.
 
 ## HTML Entry Execution (v1.2.3)
 
 DOM assertions and every other JavaScript assertion type execute against the **same jsdom instance** that ran the student's scripts. The execution lifecycle for an HTML entry (`"entry": "starter/index.html"`) is:
 
-1. `runner.js` reads the entry HTML and checks the requirements for any JavaScript assertion type (`variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`, `console`) via the shared registry in `src/constants/assertion-types.js`. If at least one exists, the engine is always initialized — even when the HTML contains no scripts at all.
+1. `runner.js` reads the entry HTML and checks the requirements for any JavaScript assertion type (`variable`, `function`, `array`, `object`, `dom`, `event`, `events`, `fetch`, `json`, `console`) via the shared registry in `src/constants/assertion-types.js`. If at least one exists, the engine is always initialized — even when the HTML contains no scripts at all.
 2. `createJSEngineFromHTML()` (in `js-execution-engine.js`) loads the HTML into a single `JSDOM` instance. The engine exposes a browser-like sandbox: `window`, `document`, `HTMLElement`, `Element`, `Node`, `Event`, `CustomEvent`, `navigator`, `localStorage`, `sessionStorage`, plus timers, events, the mocked `fetch`, intercepted `JSON`, and captured `console`.
 3. `extractScriptCode()` walks `<script>` tags in document order. Linked scripts (`src`) are resolved relative to the HTML file and read from disk; inline scripts are collected as-is. Empty script tags are skipped.
 4. The combined script code executes **exactly once** in a Node `vm` context over the jsdom window. All scripts share one global scope, preserving browser-like declaration order.
-5. Assertions run against the engine: DOM assertions (`dom`, `event`) query the live `document`; `variable`/`function`/`array`/`object` inspect the sandbox; `fetch`/`json`/`console` read the recorded calls and output. No second DOM or second engine is created.
+5. Assertions run against the engine: DOM assertions (`dom`, `event`, `events`) query the live `document`; `variable`/`function`/`array`/`object` inspect the sandbox; `fetch`/`json`/`console` read the recorded calls and output. No second DOM or second engine is created.
 6. A runtime error in student code is captured on the engine (`executionError`); every JS assertion then fails with a "JavaScript error prevented evaluation" result instead of crashing the run.
 
 Pure HTML labs without JavaScript assertions never create an engine — they continue to parse with Cheerio exactly as before.
@@ -153,7 +161,7 @@ HTML assertions use types like `element`, `attribute`, `text`, `count`, `semanti
 
 CSS assertions use `type: "css"` and dispatch to sub-modules based on `check.assertion`, `check.property`, or `check.styles` fields.
 
-JavaScript assertions (v1.2.0, async extensions v1.2.1, HTML entry execution v1.2.3) use dedicated types: `variable`, `function`, `array`, `object`, `dom`, `event`, `fetch`, `json`, `console`. Each type maps to its own module in `src/assertions/javascript/`.
+JavaScript assertions (v1.2.0, async extensions v1.2.1, HTML entry execution v1.2.3, events v1.2.4) use dedicated types: `variable`, `function`, `array`, `object`, `dom`, `event`, `events`, `fetch`, `json`, `console`. Each type maps to its own module in `src/assertions/javascript/`. The `events` type dispatches to `javascript/events.js`, which also exports the legacy `event` assertion so both types stay registered in `javascript/index.js`.
 
 ## Value Normalization
 

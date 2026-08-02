@@ -1,0 +1,10 @@
+{
+  "id": "js-events",
+  "title": "JavaScript Events",
+  "lesson": "lesson-04",
+  "language": "html",
+  "entry": "starter/index.html",
+  "provider": "local",
+  "tests": "./private-tests",
+  "version": "1.0.0"
+}

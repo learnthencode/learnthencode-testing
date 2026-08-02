@@ -1,6 +1,6 @@
 {
   "name": "learnthencode-testing",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A lightweight testing framework for the LearnThenCode Full Stack Software Engineering Bootcamp.",
   "type": "module",
   "main": "index.js",

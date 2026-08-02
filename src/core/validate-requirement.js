@@ -127,6 +127,10 @@ function validateJSRequirement(check) {
       }
       break;
 
+    case "events":
+      validateEventsRequirement(check);
+      break;
+
     case "fetch":
       break;
 
@@ -160,5 +164,76 @@ function validateJSRequirement(check) {
         );
       }
       break;
+  }
+}
+
+const EVENTS_ASSERTIONS = new Set([
+  "listenerExists",
+  "dispatch",
+  "inputValueChanges",
+]);
+
+function validateEventsRequirement(check) {
+  if (!check.assertion) {
+    throw new Error(
+      `Events assertion must include "assertion" ("listenerExists", "dispatch", or "inputValueChanges").`
+    );
+  }
+  if (!EVENTS_ASSERTIONS.has(check.assertion)) {
+    throw new Error(
+      `Events assertion "assertion" must be "listenerExists", "dispatch", or "inputValueChanges", got "${check.assertion}".`
+    );
+  }
+  if (!check.selector) {
+    throw new Error(
+      `Events assertion must include "selector".`
+    );
+  }
+
+  switch (check.assertion) {
+    case "listenerExists":
+      if (!check.event) {
+        throw new Error(
+          `Events assertion "listenerExists" must include "event" (e.g., "click").`
+        );
+      }
+      break;
+
+    case "dispatch":
+      if (!check.event) {
+        throw new Error(
+          `Events assertion "dispatch" must include "event" (e.g., "click").`
+        );
+      }
+      validateEventsExpect(check);
+      break;
+
+    case "inputValueChanges":
+      if (check.value === undefined || check.value === null) {
+        throw new Error(
+          `Events assertion "inputValueChanges" must include "value".`
+        );
+      }
+      validateEventsExpect(check);
+      break;
+  }
+}
+
+function validateEventsExpect(check) {
+  const { expect: expected } = check;
+  if (!expected || typeof expected !== "object") {
+    throw new Error(
+      `Events assertion "${check.assertion}" must include an "expect" object with "selector" and "text".`
+    );
+  }
+  if (!expected.selector) {
+    throw new Error(
+      `Events assertion "${check.assertion}" "expect" must include "selector".`
+    );
+  }
+  if (expected.text === undefined || expected.text === null) {
+    throw new Error(
+      `Events assertion "${check.assertion}" "expect" must include "text".`
+    );
   }
 }

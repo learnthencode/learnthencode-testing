@@ -18,6 +18,7 @@ export const JS_ASSERTION_TYPES = new Set([
   "object",
   "dom",
   "event",
+  "events",
   "fetch",
   "json",
   "console",
