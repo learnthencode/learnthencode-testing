@@ -5,7 +5,8 @@ import { executeRequirement } from "./execute-requirements.js";
 import { createResultCollection } from "./results.js";
 import { loadLab } from "./lab.js";
 import { createJSEngine, createJSEngineFromHTML } from "./js-execution-engine.js";
-import { isJSType } from "../constants/assertion-types.js";
+import { createReactEngine } from "./react-engine.js";
+import { isJSType, isReactType } from "../constants/assertion-types.js";
 import path from "path";
 
 export async function run(labDirectory) {
@@ -34,8 +35,13 @@ export async function run(labDirectory) {
       r => isJSType(r.check.type)
     );
 
+    const hasReactRequirements = requirements.some(
+      r => isReactType(r.check.type)
+    );
+
     let html = entryContent;
     let jsEngine = null;
+    let reactEngine = null;
 
     // Whenever at least one JavaScript assertion exists, the execution
     // engine is initialized from the lab entry. HTML entries always
@@ -55,6 +61,15 @@ export async function run(labDirectory) {
       }
     }
 
+    // React assertions bundle and render JSX modules, so they get the
+    // React execution engine instead of the plain JavaScript engine.
+    if (hasReactRequirements) {
+      reactEngine = createReactEngine({
+        labDirectory,
+        entry: lab.entry,
+      });
+    }
+
     const results = createResultCollection();
 
     for (const requirement of requirements) {
@@ -63,7 +78,8 @@ export async function run(labDirectory) {
                 requirement,
                 html,
                 entryFilePath,
-                jsEngine
+                jsEngine,
+                reactEngine
             )
         );
     }

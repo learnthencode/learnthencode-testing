@@ -24,10 +24,22 @@ export const JS_ASSERTION_TYPES = new Set([
   "console",
 ]);
 
+/**
+ * React assertion types (v1.3.0) route to the React execution engine,
+ * not the plain JavaScript engine: student code is spread across JSX
+ * modules that must be bundled and rendered before anything can be
+ * asserted.
+ */
+export const REACT_ASSERTION_TYPES = new Set(["react"]);
+
 export function isCSSType(type) {
   return CSS_ASSERTION_TYPES.has(type);
 }
 
 export function isJSType(type) {
   return JS_ASSERTION_TYPES.has(type);
+}
+
+export function isReactType(type) {
+  return REACT_ASSERTION_TYPES.has(type);
 }

@@ -1,4 +1,4 @@
-import { JS_ASSERTION_TYPES } from "../constants/assertion-types.js";
+import { JS_ASSERTION_TYPES, isReactType } from "../constants/assertion-types.js";
 
 const ASYNC_FUNCTION_ASSERTIONS = new Set([
   "returnsPromise",
@@ -52,6 +52,10 @@ export function validateRequirement(requirement) {
 
   if (JS_ASSERTION_TYPES.has(check.type)) {
     validateJSRequirement(check);
+  }
+
+  if (isReactType(check.type)) {
+    validateReactRequirement(check);
   }
 
 }
@@ -234,6 +238,196 @@ function validateEventsExpect(check) {
   if (expected.text === undefined || expected.text === null) {
     throw new Error(
       `Events assertion "${check.assertion}" "expect" must include "text".`
+    );
+  }
+}
+
+const REACT_ASSERTION_SUBTYPES = new Set([
+  "project",
+  "dependency",
+  "component",
+  "jsx",
+  "renders",
+  "props",
+  "state",
+  "hasText",
+  "hasElement",
+  "hasRole",
+  "hasLabel",
+  "hasPlaceholder",
+  "hasButton",
+  "hasHeading",
+  "hasLink",
+  "hasImage",
+  "hasList",
+  "hasForm",
+  "count",
+  "conditional",
+  "click",
+  "type",
+  "change",
+  "select",
+  "submit",
+  "reset",
+  "loadsOnMount",
+  "async",
+  "fetch",
+  "router",
+]);
+
+const COMPONENT_REQUIRED_SUBTYPES = new Set([
+  "component",
+  "jsx",
+  "renders",
+  "props",
+  "state",
+  "hasText",
+  "hasElement",
+  "hasRole",
+  "hasLabel",
+  "hasPlaceholder",
+  "hasButton",
+  "hasHeading",
+  "hasLink",
+  "hasImage",
+  "hasList",
+  "hasForm",
+  "count",
+  "conditional",
+  "click",
+  "type",
+  "change",
+  "select",
+  "submit",
+  "reset",
+  "loadsOnMount",
+  "async",
+  "fetch",
+  "router",
+]);
+
+const INTERACTION_SUBTYPES = new Set([
+  "click",
+  "type",
+  "change",
+  "select",
+  "reset",
+]);
+
+function validateReactRequirement(check) {
+  if (!check.subtype) {
+    throw new Error(
+      `React assertion must include "subtype" (e.g., "renders", "click", "fetch").`
+    );
+  }
+  if (!REACT_ASSERTION_SUBTYPES.has(check.subtype)) {
+    throw new Error(
+      `React assertion "subtype" must be one of: ${[...REACT_ASSERTION_SUBTYPES].join(", ")}, got "${check.subtype}".`
+    );
+  }
+
+  if (COMPONENT_REQUIRED_SUBTYPES.has(check.subtype) && !check.component) {
+    throw new Error(
+      `React assertion "${check.subtype}" must include "component" (the file to render, relative to the lab).`
+    );
+  }
+
+  switch (check.subtype) {
+    case "dependency":
+      if (
+        !Array.isArray(check.dependencies) ||
+        check.dependencies.length === 0
+      ) {
+        throw new Error(
+          `React assertion "dependency" must include "dependencies" (an array of package names).`
+        );
+      }
+      break;
+
+    case "count":
+      if (!check.selector) {
+        throw new Error(
+          `React assertion "count" must include "selector".`
+        );
+      }
+      if (
+        check.equals === undefined &&
+        check.minimum === undefined &&
+        check.maximum === undefined
+      ) {
+        throw new Error(
+          `React assertion "count" must include "equals", "minimum", or "maximum".`
+        );
+      }
+      break;
+
+    case "conditional":
+      if (!check.selector) {
+        throw new Error(
+          `React assertion "conditional" must include "selector".`
+        );
+      }
+      break;
+
+    case "click":
+    case "type":
+    case "change":
+    case "select":
+    case "reset":
+      if (!check.selector) {
+        throw new Error(
+          `React assertion "${check.subtype}" must include "selector".`
+        );
+      }
+      validateReactExpect(check);
+      break;
+
+    case "submit":
+      validateReactExpect(check);
+      break;
+
+    case "fetch":
+      if (
+        !check.fetch ||
+        typeof check.fetch !== "object" ||
+        Object.keys(check.fetch).length === 0
+      ) {
+        throw new Error(
+          `React assertion "fetch" must include a "fetch" object of mock routes (e.g., { "/api/users": { body: [...] } }).`
+        );
+      }
+      break;
+
+    case "router":
+      if (check.router !== undefined && typeof check.router !== "object") {
+        throw new Error(
+          `React assertion "router" "router" must be an object (e.g., { path: "/" }).`
+        );
+      }
+      break;
+  }
+}
+
+function validateReactExpect(check) {
+  const { expect: expected } = check;
+  if (!expected || typeof expected !== "object") {
+    throw new Error(
+      `React assertion "${check.subtype}" must include an "expect" object describing the state after the interaction.`
+    );
+  }
+  const hasSelectorRule =
+    expected.selector &&
+    (expected.text !== undefined ||
+      expected.value !== undefined ||
+      expected.checked !== undefined);
+  const hasTextRule = expected.text !== undefined;
+  const isAsyncState =
+    expected.loading === true ||
+    expected.empty === true ||
+    expected.error === true;
+  if (!hasSelectorRule && !hasTextRule && !isAsyncState) {
+    throw new Error(
+      `React assertion "${check.subtype}" "expect" must include "text" (or "selector" with "text"/"value"/"checked").`
     );
   }
 }

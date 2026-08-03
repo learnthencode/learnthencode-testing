@@ -1071,6 +1071,133 @@ expectCSS("div").toHaveOverflow("hidden");
 
 ---
 
+### React Assertions (v1.3.0)
+
+React labs let learners write JSX components (`.jsx` files using `react` and `react-dom`) that the framework bundles with esbuild and renders inside jsdom with React 19. Every assertion renders the named component (with optional props) and inspects the resulting DOM — no browser or test runner is required.
+
+#### React Lab Configuration
+
+```json
+{
+  "id": "react-greeting-app",
+  "title": "React Greeting App",
+  "lesson": "lesson-08",
+  "language": "javascript",
+  "entry": "src/App.jsx",
+  "version": "1.0.0"
+}
+```
+
+The lab's `entry` must point at an existing file (the runner reads it to locate the project). The lab directory should contain a `package.json` declaring `react` and `react-dom` (see the `dependency` assertion below).
+
+#### Component Requirements
+
+Every render-based assertion takes a `component` (the `.jsx` file relative to the lab) and optional `props` / `exportName`:
+
+```json
+{
+  "id": "react-001",
+  "name": "App renders JSX",
+  "points": 5,
+  "check": {
+    "type": "react",
+    "subtype": "renders",
+    "component": "src/App.jsx"
+  }
+}
+```
+
+Render-based subtypes: `renders`, `props`, `state`, `hasText`, `hasElement`, `hasRole`, `hasLabel`, `hasPlaceholder`, `hasButton`, `hasHeading`, `hasLink`, `hasImage`, `hasList`, `hasForm`, `count`, `conditional`, `click`, `type`, `change`, `select`, `submit`, `reset`, `loadsOnMount`, `async`, `fetch`, `router`.
+
+Common `expect` shapes:
+
+| Shape | Verifies |
+| --- | --- |
+| `{ "text": "Hi Ada" }` | The rendered output contains the text. |
+| `{ "selector": "#msg", "text": "Hi Ada" }` | The element's text equals the text. |
+| `{ "selector": "#name", "value": "Ada" }` | The element's value equals the value. |
+| `{ "selector": "#cb", "checked": true }` | The element's checked state matches. |
+| `{ "loading": true }`, `{ "empty": true }`, `{ "error": true }` | Async UI states. |
+
+#### Interaction Assertions
+
+```json
+{
+  "id": "react-004",
+  "name": "Typing updates the input",
+  "points": 10,
+  "check": {
+    "type": "react",
+    "subtype": "type",
+    "component": "src/App.jsx",
+    "selector": "#name",
+    "value": "Ada",
+    "expect": { "selector": "#name", "value": "Ada" }
+  }
+}
+```
+
+- `click` — clicks `selector` (button, link, checkbox, ...), verifies `expect`.
+- `type` — types `value` into a controlled `selector` input/textarea, verifies `expect`.
+- `change` — changes a checkbox/radio/select/text control, verifies `expect`.
+- `select` — picks `value` in a `<select>` menu, verifies `expect`.
+- `submit` — optionally fills `values` (`{ "#name": "Ada" }`) then submits the form, verifies `expect`.
+- `reset` — types `value` into `selector`, clicks `resetSelector`, verifies `expect`.
+
+#### Fetch Mocking
+
+`loadsOnMount` and `fetch` assert that the component fetches data in a `useEffect` and renders the mocked response. Mocks are installed before the component renders, so effects that fire during the render see them:
+
+```json
+{
+  "id": "react-006",
+  "name": "Users load on mount",
+  "points": 10,
+  "check": {
+    "type": "react",
+    "subtype": "loadsOnMount",
+    "component": "src/Users.jsx",
+    "fetch": {
+      "/api/users": { "body": [{ "id": 1, "name": "Alice" }] }
+    },
+    "expect": { "text": "Alice" }
+  }
+}
+```
+
+Mock routes are matched exactly, then by longest substring; a `"*"` key is the catch-all. Scenarios: `success` (default, serves `body`), `error` (`ok: false`, 500), `empty` (`json()` resolves to `[]`), and `loading` (never settles). `expect` supports `text`, `loading`, `empty`, and `error`. Unmatched URLs resolve to a successful empty response so components render their fallback state.
+
+#### Other Subtypes
+
+- `component` / `jsx` — the named component file exists / contains JSX.
+- `dependency` — the lab `package.json` declares the given `dependencies` (array of package names).
+- `project` — the project structure looks like a React project (package.json + entry).
+- `router` — renders the component inside a `MemoryRouter` at `router.path` and verifies `expect`.
+
+#### Programmatic React API
+
+For `.test.js` files:
+
+```js
+import { renderReact, fireEvent, expectReact, mockFetch, withRouter } from "learnthencode-testing/src/assertions/react/index.js";
+import App from "./src/App.jsx";
+
+const view = await renderReact(App, { name: "Ada" });
+view.getByText("Hello, Ada");
+view.getByRole("button", "Save");
+
+await fireEvent.click(view.getByRole("button", "Save"));
+await fireEvent.type(view.getByPlaceholder("Your name"), "Ada");
+await fireEvent.submit(view.querySelector("form"));
+
+mockFetch({ "/api/users": { body: [{ id: 1, name: "Alice" }] } });
+const users = await renderReact(withRouter(App, { path: "/users/42" }));
+```
+
+A runnable example lab lives in [`examples/react/`](./examples/react).
+
+---
+
 ## Project Structure
 
 ```
@@ -1079,6 +1206,21 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
+│   │   ├── react/              ← React component assertions (v1.3.0)
+│   │   │   ├── index.js        ← reactAssertions map + programmatic API
+│   │   │   ├── render-assertions.js
+│   │   │   ├── interactions.js
+│   │   │   ├── effects.js
+│   │   │   ├── fetch-assertions.js
+│   │   │   ├── router-assertions.js
+│   │   │   ├── static.js
+│   │   │   ├── environment.js ← shared jsdom environment
+│   │   │   ├── render.js
+│   │   │   ├── queries.js
+│   │   │   ├── fire.js         ← user interaction helpers
+│   │   │   ├── fetch.js        ← fetch mocking
+│   │   │   ├── router.js
+│   │   │   └── expect.js
 │   │   ├── javascript/         ← JavaScript assertions (v1.2.1)
 │   │   │   ├── index.js
 │   │   │   ├── variables.js
@@ -1117,7 +1259,7 @@ learnthencode-testing/
 │   │   ├── index.js
 │   │   └── parser.js
 │   ├── constants/
-│   │   ├── assertion-types.js   ← JS/CSS assertion type registry (v1.2.3)
+│   │   ├── assertion-types.js   ← JS/CSS/React assertion type registry (v1.3.0)
 │   │   ├── async.js            ← Async defaults (v1.2.1)
 │   │   └── messages.js         ← CLI output messages
 │   ├── core/                   ← Core runner pipeline
@@ -1125,6 +1267,7 @@ learnthencode-testing/
 │   │   ├── discover-tests.js
 │   │   ├── execute-requirements.js
 │   │   ├── js-execution-engine.js  ← JavaScript sandbox (v1.2.1, HTML entries v1.2.3)
+│   │   ├── react-engine.js     ← React bundling + render engine (v1.3.0)
 │   │   ├── lab.js
 │   │   ├── load-html.js
 │   │   ├── load-requirements.js

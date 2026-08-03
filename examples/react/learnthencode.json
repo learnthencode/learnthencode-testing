@@ -1,0 +1,10 @@
+{
+  "id": "react-greeting-app",
+  "title": "React Greeting App",
+  "language": "javascript",
+  "entry": "src/App.jsx",
+  "provider": "local",
+  "tests": "./private-tests",
+  "lesson": "lesson-08",
+  "version": "1.0.0"
+}

@@ -141,27 +141,30 @@ Every awaited assertion is raced against a timeout so a promise that never settl
 3. Synchronous and asynchronous assertions can therefore coexist in the same requirements file; the runner awaits each result before moving to the next, preserving deterministic order.
 4. The CLI (`src/cli/commands.js`) awaits `run()` before reporting.
 
-### Preparing for React Component Testing (v1.3.0)
+### React Component Testing (v1.3.0)
 
-The async lifecycle is the foundation for future React support without breaking API changes:
+`src/core/react-engine.js` is a second execution engine built on top of the async lifecycle:
 
-- The runner already awaits per-requirement outcomes, so a future React engine can return promises that settle after `render()` / `act()` / effect flushing without touching the runner.
-- Assertions are looked up purely by `check.type`, so React assertions can be registered as new modules in `src/assertions/react/` and routed in `execute-requirements.js` — no existing assertion is modified.
-- Timeout handling is generic (`withTimeout` + `ASYNC_TIMEOUT_MS`), so component assertions that wait for asynchronous state updates, effects, or data fetching get the same hang protection.
-- The `expect()` bridge (`src/assertions/expect.js`) is language-agnostic, so React assertions produce identical result objects and scoring.
-- Deep equality already handles values crossing execution-realm boundaries, which is exactly the situation React components produce (virtual DOM snapshots, state objects, fetched data).
+- **Bundling** — student `.jsx` files are bundled with esbuild (`format: "cjs"`, `platform: "browser"`, `jsx: "automatic"`). `react`, `react-dom`, `react-dom/client`, `react/jsx-runtime`, and `react-router-dom` are external; css/svg/png/etc. get empty loaders. Bundles are cached by absolute path.
+- **Sandbox execution** — the bundle runs in a `vm` context whose `require` shim serves the host's real React/react-dom/react-router-dom instances (host-realm modules, same approach as react-testing-library). `window`, `document`, `navigator`, `HTMLElement`, `Element`, and `Node` are installed as host globals before rendering; `IS_REACT_ACT_ENVIRONMENT = true` enables React 19's `act()`.
+- **Rendering** — `renderComponent` resolves the export (`getComponent`), wraps it in a `MemoryRouter` when the check asks for routing, and renders inside `act()` (`src/assertions/react/render.js`). A component that throws while rendering is captured (act rethrows it, the try/catch converts it to `{ container: null, error }`) instead of crashing the run. A `reportError` sink and window "error" listener collect async failures.
+- **Interactions** — `src/assertions/react/fire.js` simulates clicks, typing, selection, submit, and reset inside `act()`. Controlled inputs follow React 19's change-event machinery: a `focusin` dispatch makes the input React's active element, the native value setter updates the DOM value, and a `keydown` dispatch triggers the change handler through the input-event polyfill. jsdom's missing `attachEvent`/`detachEvent` (used by React's value-change watcher) is shimmed onto `HTMLElement.prototype` in `environment.js`.
+- **Fetch mocking** — `src/assertions/react/fetch.js` intercepts `window.fetch` for the sandbox. Mocks are installed *before* `renderComponent` so `useEffect` fetches issued during the render flush hit the mock. Routes match exactly, then by longest substring, then `"*"` catch-all; scenarios are `success`/`error`/`empty`/`loading`; unmatched URLs resolve to a successful empty response so components render their fallback state.
+- **Dispatch** — requirements with `"type": "react"` are routed by `check.subtype` through `reactAssertions` (`src/assertions/react/index.js`), a separate map from the generic `assertions` map (generic `count`/`fetch` keys would collide). The runner creates the React engine when any requirement has a React type, regardless of the entry extension.
 
 ## Assertion Registry
 
 Assertions are registered in `src/assertions/index.js` under the `assertions` map. The `check.type` field in requirements.json selects which assertion to execute.
 
-The set of JavaScript and CSS types is defined once in `src/constants/assertion-types.js`. `execute-requirements.js`, `runner.js`, and `validate-requirement.js` all import from it, so registering a new JavaScript type there automatically makes the runner initialize the execution engine when any requirement uses it.
+The set of JavaScript, CSS, and React types is defined once in `src/constants/assertion-types.js`. `execute-requirements.js`, `runner.js`, and `validate-requirement.js` all import from it, so registering a new type there automatically makes the runner initialize the matching engine when any requirement uses it.
 
 HTML assertions use types like `element`, `attribute`, `text`, `count`, `semantic`, `structure`.
 
 CSS assertions use `type: "css"` and dispatch to sub-modules based on `check.assertion`, `check.property`, or `check.styles` fields.
 
 JavaScript assertions (v1.2.0, async extensions v1.2.1, HTML entry execution v1.2.3, events v1.2.4) use dedicated types: `variable`, `function`, `array`, `object`, `dom`, `event`, `events`, `fetch`, `json`, `console`. Each type maps to its own module in `src/assertions/javascript/`. The `events` type dispatches to `javascript/events.js`, which also exports the legacy `event` assertion so both types stay registered in `javascript/index.js`.
+
+React assertions (v1.3.0) use `type: "react"` and dispatch to `src/assertions/react/index.js` by `check.subtype` (30 subtypes covering render checks, interactions, effects/fetch, and routing). Validation lives in `validateReactRequirement` (`src/core/validate-requirement.js`), which shares the field conventions of the other types.
 
 ## Value Normalization
 

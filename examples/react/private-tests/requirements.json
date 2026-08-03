@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "lesson": "08-react-fundamentals",
+  "lab": "react-greeting-app",
+  "requirements": [
+    {
+      "id": "react-001",
+      "name": "App renders JSX",
+      "description": "The App component renders JSX instead of a plain string.",
+      "points": 5,
+      "hint": "Return a JSX element from the component, e.g. <main>...</main>.",
+      "check": {
+        "type": "react",
+        "subtype": "renders",
+        "component": "src/App.jsx"
+      }
+    },
+    {
+      "id": "react-002",
+      "name": "App shows a heading",
+      "description": "The App component renders a heading with the text \"Greeting App\".",
+      "points": 5,
+      "hint": "Add <h1>Greeting App</h1> to the rendered output.",
+      "check": {
+        "type": "react",
+        "subtype": "hasHeading",
+        "component": "src/App.jsx",
+        "expect": { "text": "Greeting App" }
+      }
+    },
+    {
+      "id": "react-003",
+      "name": "Typing updates the input",
+      "description": "Typing into the #name input updates the controlled component state.",
+      "points": 10,
+      "hint": "Use value={name} and onChange={(e) => setName(e.target.value)}.",
+      "check": {
+        "type": "react",
+        "subtype": "type",
+        "component": "src/App.jsx",
+        "selector": "#name",
+        "value": "Ada",
+        "expect": { "selector": "#name", "value": "Ada" }
+      }
+    },
+    {
+      "id": "react-004",
+      "name": "Submitting the form greets the user",
+      "description": "Submitting the form after typing a name shows \"Hello <name>\".",
+      "points": 10,
+      "hint": "Handle onSubmit on the form and render the message in #message.",
+      "check": {
+        "type": "react",
+        "subtype": "submit",
+        "component": "src/App.jsx",
+        "values": { "#name": "Ada" },
+        "expect": { "text": "Hello Ada" }
+      }
+    },
+    {
+      "id": "react-005",
+      "name": "Clicking the counter increments it",
+      "description": "Clicking the #counter button increments the displayed count.",
+      "points": 10,
+      "hint": "Keep count in state and update it in the button's onClick handler.",
+      "check": {
+        "type": "react",
+        "subtype": "click",
+        "component": "src/App.jsx",
+        "selector": "#counter",
+        "expect": { "text": "Count: 1" }
+      }
+    },
+    {
+      "id": "react-006",
+      "name": "Users load on mount",
+      "description": "The Users component fetches /api/users when it mounts and renders the returned names.",
+      "points": 10,
+      "hint": "Call fetch in a useEffect with an empty dependency array.",
+      "check": {
+        "type": "react",
+        "subtype": "loadsOnMount",
+        "component": "src/Users.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "expect": { "text": "Alice" }
+      }
+    },
+    {
+      "id": "react-007",
+      "name": "Fetch mock serves the right data",
+      "description": "The mocked /api/users route returns the declared body.",
+      "points": 5,
+      "hint": "The fetch assertion mocks the declared routes; the component must fetch that URL.",
+      "check": {
+        "type": "react",
+        "subtype": "fetch",
+        "component": "src/Users.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [{ "id": 1, "name": "Bob" }]
+          }
+        },
+        "expect": { "text": "Bob" }
+      }
+    },
+    {
+      "id": "react-008",
+      "name": "Project depends on React",
+      "description": "The lab declares react and react-dom in its package.json dependencies.",
+      "points": 5,
+      "hint": "Add react and react-dom to the dependencies in package.json.",
+      "check": {
+        "type": "react",
+        "subtype": "dependency",
+        "dependencies": ["react", "react-dom"]
+      }
+    },
+    {
+      "id": "react-009",
+      "name": "App component exists",
+      "description": "The lab includes an App component that exports a function.",
+      "points": 5,
+      "hint": "Create src/App.jsx exporting a function component as default.",
+      "check": {
+        "type": "react",
+        "subtype": "component",
+        "component": "src/App.jsx"
+      }
+    }
+  ]
+}
