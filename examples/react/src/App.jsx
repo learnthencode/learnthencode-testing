@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useCounter } from "./hooks/useCounter";
 
 export default function App() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
-  const [count, setCount] = useState(0);
+  const [count, increment] = useCounter(0);
+
+  useEffect(() => {
+    document.title = "Greeting App";
+    return () => {
+      document.title = "LearnThenCode";
+    };
+  }, []);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -23,7 +31,7 @@ export default function App() {
         <button type="submit">Greet</button>
       </form>
       <p id="message">{message}</p>
-      <button id="counter" onClick={() => setCount(count + 1)}>
+      <button id="counter" onClick={increment}>
         Count: {count}
       </button>
     </main>

@@ -85,7 +85,7 @@ learnthencode-test --version
 ```
 ========================================
  LearnThenCode Testing Framework
- Version 1.2.3
+ Version 1.3.1
 ========================================
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1198,6 +1198,200 @@ A runnable example lab lives in [`examples/react/`](./examples/react).
 
 ---
 
+### React Assertions (v1.3.1)
+
+v1.3.1 extends the React engine with static **source analysis** assertions for the remaining React course labs: effects, API integration, routing, custom hooks, and project architecture. These assertions inspect student source files through an **Abstract Syntax Tree** produced by [`@babel/parser`](https://babeljs.io/docs/babel-parser) (walked with `@babel/traverse` and `@babel/types`) — never string matching or regular expressions — so formatting differences (whitespace, quote style, line breaks) cannot affect the outcome.
+
+All v1.3.1 assertions run on the files on disk; none of them bundle or render the component.
+
+#### `effect` — useEffect Is Imported and Called
+
+Verifies the component imports `useEffect` from `react` and calls it at least once.
+
+```json
+{
+  "type": "react",
+  "subtype": "effect",
+  "component": "src/App.jsx"
+}
+```
+
+**Validation rules:** `component` is required.
+
+**Expected behavior:** passes when `useEffect` appears in the `react` import and at least one `useEffect(...)` call exists anywhere in the file.
+
+---
+
+#### `dependencyArray` — Effects Pass a Dependency Array
+
+Verifies that at least one `useEffect` call passes a dependency array as its second argument. Accepts `useEffect(() => {}, [])` and `useEffect(() => {}, [count])`; rejects `useEffect(() => {})`.
+
+```json
+{
+  "type": "react",
+  "subtype": "dependencyArray",
+  "component": "src/App.jsx"
+}
+```
+
+**Validation rules:** `component` is required.
+
+**Expected behavior:** passes when any `useEffect` call has an `ArrayExpression` as its second argument.
+
+---
+
+#### `cleanup` — An Effect Returns a Cleanup Function
+
+Verifies that at least one effect callback returns a cleanup function. Accepts explicit returns (`return () => {}`, `return function cleanup() {}`, `return clearTimeout(timer)`) and implicit arrow returns (`useEffect(() => () => {}, [])`).
+
+```json
+{
+  "type": "react",
+  "subtype": "cleanup",
+  "component": "src/App.jsx"
+}
+```
+
+**Validation rules:** `component` is required.
+
+**Expected behavior:** passes when any `useEffect` callback body contains a `return` of a function (or the callback itself is a function expression).
+
+---
+
+#### `customHook` — Custom Hook Exists and Uses Hooks
+
+Verifies the file exports a function whose name starts with `use` and that the function calls at least one React hook.
+
+```json
+{
+  "type": "react",
+  "subtype": "customHook",
+  "component": "src/hooks/useCounter.js"
+}
+```
+
+**Validation rules:** `component` is required.
+
+**Expected behavior:** passes when the file has an exported `use*` function (default or named export, function declaration or `const` arrow) containing a call to a known React hook (`useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, `useContext`, `useReducer`, router hooks, and more).
+
+---
+
+#### `imports` — Expected Modules Are Imported
+
+Verifies that every module specifier in `expect` appears in an import statement.
+
+```json
+{
+  "type": "react",
+  "subtype": "imports",
+  "component": "src/App.jsx",
+  "expect": ["react-router-dom", "./components/Navbar"]
+}
+```
+
+**Validation rules:** `component` and a non-empty `expect` array of strings are required.
+
+**Expected behavior:** passes when every entry of `expect` matches an import source exactly (`import ... from "react-router-dom"`).
+
+---
+
+#### `fileExists` — File Exists
+
+Verifies a file exists relative to the lab root.
+
+```json
+{
+  "type": "react",
+  "subtype": "fileExists",
+  "path": "src/hooks/useCounter.js"
+}
+```
+
+**Validation rules:** `path` (non-empty string) is required.
+
+**Expected behavior:** passes when the file exists on disk.
+
+---
+
+#### `folderExists` — Folder Exists
+
+Verifies a folder exists relative to the lab root.
+
+```json
+{
+  "type": "react",
+  "subtype": "folderExists",
+  "path": "src/hooks"
+}
+```
+
+**Validation rules:** `path` (non-empty string) is required.
+
+**Expected behavior:** passes when the path exists and is a directory (a file at the same path does not pass).
+
+---
+
+#### `route` — Route Path Exists
+
+Verifies the component declares a `<Route path="...">` matching the expected path exactly.
+
+```json
+{
+  "type": "react",
+  "subtype": "route",
+  "component": "src/App.jsx",
+  "path": "/about"
+}
+```
+
+**Validation rules:** `component` and `path` are required.
+
+**Expected behavior:** passes when a `<Route>` element with a literal `path` attribute equal to `check.path` is found (dynamic expressions such as `path={someVar}` are ignored). The failure message lists the paths that were found.
+
+---
+
+#### `routeParam` — Dynamic Route Parameter Exists
+
+Verifies a parameterized route such as `<Route path="/users/:id">`.
+
+```json
+{
+  "type": "react",
+  "subtype": "routeParam",
+  "component": "src/App.jsx",
+  "path": "/users/:id"
+}
+```
+
+**Validation rules:** `component` and `path` are required.
+
+**Expected behavior:** same matching logic as `route`, with a message that points the learner at `:` parameters and `useParams()`.
+
+---
+
+#### `navLink` — Navigation Link Target Exists
+
+Verifies a `<Link to="...">` or `<NavLink to="...">` targets the expected path.
+
+```json
+{
+  "type": "react",
+  "subtype": "navLink",
+  "component": "src/App.jsx",
+  "expect": "/about"
+}
+```
+
+**Validation rules:** `component` and a non-empty `expect` string are required.
+
+**Expected behavior:** passes when any `Link` or `NavLink` element has a literal `to` attribute equal to `check.expect`.
+
+---
+
+The v1.3.1 example lab in [`examples/react/`](./examples/react) demonstrates every new assertion: `src/App.jsx` uses `useEffect` with a dependency array and a cleanup function, `src/hooks/useCounter.js` is a custom hook used by `App`, and `src/RoutedApp.jsx` declares routes, a dynamic parameter route, and navigation links. The full set of 40 React subtypes is dispatched from `src/assertions/react/index.js`.
+
+---
+
 ## Project Structure
 
 ```
@@ -1206,8 +1400,10 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
-│   │   ├── react/              ← React component assertions (v1.3.0)
+│   │   ├── react/              ← React component assertions (v1.3.0, source analysis v1.3.1)
 │   │   │   ├── index.js        ← reactAssertions map + programmatic API
+│   │   │   ├── ast.js          ← @babel/parser AST helpers (v1.3.1)
+│   │   │   ├── ast-assertions.js ← effect/dependencyArray/cleanup/customHook/imports/fileExists/folderExists/route/routeParam/navLink (v1.3.1)
 │   │   │   ├── render-assertions.js
 │   │   │   ├── interactions.js
 │   │   │   ├── effects.js

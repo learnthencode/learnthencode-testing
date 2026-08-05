@@ -34,9 +34,21 @@ import {
 import { loadsOnMountAssertion, asyncAssertion } from "./effects.js";
 import { fetchAssertion } from "./fetch-assertions.js";
 import { routerAssertion } from "./router-assertions.js";
+import {
+  effectAssertion,
+  dependencyArrayAssertion,
+  cleanupAssertion,
+  customHookAssertion,
+  importsAssertion,
+  fileExistsAssertion,
+  folderExistsAssertion,
+  routeAssertion,
+  routeParamAssertion,
+  navLinkAssertion,
+} from "./ast-assertions.js";
 
 /**
- * All React assertion functions (v1.3.0), keyed by requirement check
+ * All React assertion functions (v1.3.1), keyed by requirement check
  * subtype. Every function has the signature:
  *
  *   async (engine, requirement) => result
@@ -77,6 +89,17 @@ export const reactAssertions = {
   async: asyncAssertion,
   fetch: fetchAssertion,
   router: routerAssertion,
+
+  effect: effectAssertion,
+  dependencyArray: dependencyArrayAssertion,
+  cleanup: cleanupAssertion,
+  customHook: customHookAssertion,
+  imports: importsAssertion,
+  fileExists: fileExistsAssertion,
+  folderExists: folderExistsAssertion,
+  route: routeAssertion,
+  routeParam: routeParamAssertion,
+  navLink: navLinkAssertion,
 };
 
 export { verifyExpect };

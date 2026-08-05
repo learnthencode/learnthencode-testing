@@ -317,6 +317,11 @@ export function createReactEngine({ labDirectory, entry }) {
       return fs.existsSync(path.resolve(labDirectory, relativePath));
     },
 
+    directoryExists(relativePath) {
+      const absolutePath = path.resolve(labDirectory, relativePath);
+      return fs.existsSync(absolutePath) && fs.statSync(absolutePath).isDirectory();
+    },
+
     readFile(relativePath) {
       return fs.readFileSync(path.resolve(labDirectory, relativePath), "utf-8");
     },

@@ -273,6 +273,16 @@ const REACT_ASSERTION_SUBTYPES = new Set([
   "async",
   "fetch",
   "router",
+  "effect",
+  "dependencyArray",
+  "cleanup",
+  "customHook",
+  "imports",
+  "fileExists",
+  "folderExists",
+  "route",
+  "routeParam",
+  "navLink",
 ]);
 
 const COMPONENT_REQUIRED_SUBTYPES = new Set([
@@ -304,6 +314,14 @@ const COMPONENT_REQUIRED_SUBTYPES = new Set([
   "async",
   "fetch",
   "router",
+  "effect",
+  "dependencyArray",
+  "cleanup",
+  "customHook",
+  "imports",
+  "route",
+  "routeParam",
+  "navLink",
 ]);
 
 const INTERACTION_SUBTYPES = new Set([
@@ -402,6 +420,44 @@ function validateReactRequirement(check) {
       if (check.router !== undefined && typeof check.router !== "object") {
         throw new Error(
           `React assertion "router" "router" must be an object (e.g., { path: "/" }).`
+        );
+      }
+      break;
+
+    case "imports":
+      if (
+        !Array.isArray(check.expect) ||
+        check.expect.length === 0 ||
+        check.expect.some((source) => typeof source !== "string")
+      ) {
+        throw new Error(
+          `React assertion "imports" must include "expect" (a non-empty array of module specifiers, e.g. ["react-router-dom"]).`
+        );
+      }
+      break;
+
+    case "fileExists":
+    case "folderExists":
+      if (typeof check.path !== "string" || !check.path) {
+        throw new Error(
+          `React assertion "${check.subtype}" must include "path" (the file or folder relative to the lab).`
+        );
+      }
+      break;
+
+    case "route":
+    case "routeParam":
+      if (typeof check.path !== "string" || !check.path) {
+        throw new Error(
+          `React assertion "${check.subtype}" must include "path" (the route path, e.g. "/about" or "/users/:id").`
+        );
+      }
+      break;
+
+    case "navLink":
+      if (typeof check.expect !== "string" || !check.expect) {
+        throw new Error(
+          `React assertion "navLink" must include "expect" (the link target path, e.g. "/about").`
         );
       }
       break;

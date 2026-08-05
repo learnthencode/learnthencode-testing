@@ -133,6 +133,130 @@
         "subtype": "component",
         "component": "src/App.jsx"
       }
+    },
+    {
+      "id": "react-010",
+      "name": "App uses an effect",
+      "description": "The App component imports and calls useEffect.",
+      "points": 5,
+      "hint": "Import useEffect from react and call it inside the component, e.g. useEffect(() => { ... }, []).",
+      "check": {
+        "type": "react",
+        "subtype": "effect",
+        "component": "src/App.jsx"
+      }
+    },
+    {
+      "id": "react-011",
+      "name": "Effects include a dependency array",
+      "description": "Every useEffect call passes a dependency array as its second argument.",
+      "points": 5,
+      "hint": "Pass a second argument to useEffect, e.g. useEffect(() => { ... }, []) or useEffect(() => { ... }, [count]).",
+      "check": {
+        "type": "react",
+        "subtype": "dependencyArray",
+        "component": "src/App.jsx"
+      }
+    },
+    {
+      "id": "react-012",
+      "name": "An effect returns a cleanup function",
+      "description": "At least one effect in App returns a cleanup function.",
+      "points": 5,
+      "hint": "Return a function from the effect callback, e.g. useEffect(() => { ... return () => { ... }; }, []).",
+      "check": {
+        "type": "react",
+        "subtype": "cleanup",
+        "component": "src/App.jsx"
+      }
+    },
+    {
+      "id": "react-013",
+      "name": "Custom hook exists",
+      "description": "src/hooks/useCounter.js exports a use* function that calls React hooks.",
+      "points": 10,
+      "hint": "Create src/hooks/useCounter.js exporting a function named useCounter that calls at least one hook such as useState or useEffect.",
+      "check": {
+        "type": "react",
+        "subtype": "customHook",
+        "component": "src/hooks/useCounter.js"
+      }
+    },
+    {
+      "id": "react-014",
+      "name": "App imports the expected modules",
+      "description": "The App component imports react and the useCounter custom hook.",
+      "points": 5,
+      "hint": "Add import statements for react and ./hooks/useCounter.",
+      "check": {
+        "type": "react",
+        "subtype": "imports",
+        "component": "src/App.jsx",
+        "expect": ["react", "./hooks/useCounter"]
+      }
+    },
+    {
+      "id": "react-015",
+      "name": "Hook file exists",
+      "description": "The custom hook file src/hooks/useCounter.js exists.",
+      "points": 5,
+      "hint": "Create the file src/hooks/useCounter.js.",
+      "check": {
+        "type": "react",
+        "subtype": "fileExists",
+        "path": "src/hooks/useCounter.js"
+      }
+    },
+    {
+      "id": "react-016",
+      "name": "Hooks folder exists",
+      "description": "The project has a src/hooks folder for custom hooks.",
+      "points": 5,
+      "hint": "Create the folder src/hooks and put custom hooks inside it.",
+      "check": {
+        "type": "react",
+        "subtype": "folderExists",
+        "path": "src/hooks"
+      }
+    },
+    {
+      "id": "react-017",
+      "name": "About route exists",
+      "description": "RoutedApp declares a route with the path /about.",
+      "points": 10,
+      "hint": "Add <Route path=\"/about\" element={...} /> inside <Routes>.",
+      "check": {
+        "type": "react",
+        "subtype": "route",
+        "component": "src/RoutedApp.jsx",
+        "path": "/about"
+      }
+    },
+    {
+      "id": "react-018",
+      "name": "Dynamic user route exists",
+      "description": "RoutedApp declares a parameterized route /users/:id.",
+      "points": 10,
+      "hint": "Add <Route path=\"/users/:id\" element={...} /> and read the parameter with useParams().",
+      "check": {
+        "type": "react",
+        "subtype": "routeParam",
+        "component": "src/RoutedApp.jsx",
+        "path": "/users/:id"
+      }
+    },
+    {
+      "id": "react-019",
+      "name": "About link exists",
+      "description": "RoutedApp renders a Link or NavLink pointing at /about.",
+      "points": 5,
+      "hint": "Add <Link to=\"/about\"> or <NavLink to=\"/about\"> to the navigation.",
+      "check": {
+        "type": "react",
+        "subtype": "navLink",
+        "component": "src/RoutedApp.jsx",
+        "expect": "/about"
+      }
     }
   ]
 }
