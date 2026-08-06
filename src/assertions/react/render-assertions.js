@@ -6,7 +6,7 @@ import {
 } from "./queries.js";
 
 /**
- * Render-based React assertions (v1.3.0).
+ * Render-based React assertions (v1.3.0, list item checks v1.3.2).
  *
  * Every assertion renders the named component (with optional props)
  * into the shared jsdom window and inspects the resulting DOM. These
@@ -16,6 +16,9 @@ import {
  *   - props          — the component accepts and uses the given props.
  *   - state          — the rendered output reflects useState's initial value.
  *   - hasText        — rendered text content.
+ *   - hasNoText      — text is absent from the rendered output (v1.3.2).
+ *   - hasItem        — a list item with the given text is rendered (v1.3.2).
+ *   - missingItem    — a list item with the given text is absent (v1.3.2).
  *   - hasElement     - a CSS selector matches rendered output.
  *   - hasRole        — an element with an ARIA role (and optional name).
  *   - hasLabel       — a form control associated with a label.
@@ -210,6 +213,67 @@ async function textAssertion(engine, requirement, kind) {
 
 export function hasTextAssertion(engine, requirement) {
   return textAssertion(engine, requirement);
+}
+
+/**
+ * List-content assertions (v1.3.2).
+ *
+ * hasNoText — "text" must NOT appear anywhere in the rendered output.
+ * hasItem   — "text" must appear (a semantic alias for list contents,
+ *             with learner-friendly item messages).
+ * missingItem — "text" must NOT appear (an item was removed).
+ *
+ * Optional check.fetch mocks are installed before rendering so CRUD
+ * components can load their data before the check runs.
+ */
+async function listContentAssertion(engine, requirement, kind) {
+  const { check } = requirement;
+  if (check.fetch) {
+    engine.setFetchMocks(check.fetch);
+  }
+
+  const { result, container } = await renderFor(engine, check, requirement);
+  if (result) {
+    return result;
+  }
+
+  const target = String(check.text);
+  const actual = normalizeText(container.textContent);
+  const present = actual.includes(target);
+
+  if (kind === "hasItem") {
+    if (!present) {
+      return fail(
+        requirement,
+        `Expected the list to contain the item "${target}", but it was not found in the rendered output: ${
+          actual ? `"${actual}"` : "nothing"
+        }.`
+      );
+    }
+    return pass(requirement);
+  }
+
+  if (present) {
+    return fail(
+      requirement,
+      kind === "hasNoText"
+        ? `Expected the text "${target}" to no longer be rendered, but it is still visible in the output: "${actual}".`
+        : `Expected the item "${target}" to be removed from the list, but it is still rendered: "${actual}".`
+    );
+  }
+  return pass(requirement);
+}
+
+export async function hasNoTextAssertion(engine, requirement) {
+  return listContentAssertion(engine, requirement, "hasNoText");
+}
+
+export async function hasItemAssertion(engine, requirement) {
+  return listContentAssertion(engine, requirement, "hasItem");
+}
+
+export async function missingItemAssertion(engine, requirement) {
+  return listContentAssertion(engine, requirement, "missingItem");
 }
 
 export async function elementAssertion(engine, requirement) {

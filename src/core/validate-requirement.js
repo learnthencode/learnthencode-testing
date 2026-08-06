@@ -251,6 +251,9 @@ const REACT_ASSERTION_SUBTYPES = new Set([
   "props",
   "state",
   "hasText",
+  "hasNoText",
+  "hasItem",
+  "missingItem",
   "hasElement",
   "hasRole",
   "hasLabel",
@@ -272,6 +275,8 @@ const REACT_ASSERTION_SUBTYPES = new Set([
   "loadsOnMount",
   "async",
   "fetch",
+  "method",
+  "requestBody",
   "router",
   "effect",
   "dependencyArray",
@@ -292,6 +297,9 @@ const COMPONENT_REQUIRED_SUBTYPES = new Set([
   "props",
   "state",
   "hasText",
+  "hasNoText",
+  "hasItem",
+  "missingItem",
   "hasElement",
   "hasRole",
   "hasLabel",
@@ -313,6 +321,8 @@ const COMPONENT_REQUIRED_SUBTYPES = new Set([
   "loadsOnMount",
   "async",
   "fetch",
+  "method",
+  "requestBody",
   "router",
   "effect",
   "dependencyArray",
@@ -397,10 +407,16 @@ function validateReactRequirement(check) {
           `React assertion "${check.subtype}" must include "selector".`
         );
       }
+      if (check.fetch) {
+        validateFetchRoutes(check.fetch);
+      }
       validateReactExpect(check);
       break;
 
     case "submit":
+      if (check.fetch) {
+        validateFetchRoutes(check.fetch);
+      }
       validateReactExpect(check);
       break;
 
@@ -412,6 +428,34 @@ function validateReactRequirement(check) {
       ) {
         throw new Error(
           `React assertion "fetch" must include a "fetch" object of mock routes (e.g., { "/api/users": { body: [...] } }).`
+        );
+      }
+      validateFetchRoutes(check.fetch);
+      break;
+
+    case "method":
+      validateMethodExpect(check);
+      break;
+
+    case "requestBody":
+      if (
+        !check.expect ||
+        typeof check.expect !== "object" ||
+        Array.isArray(check.expect) ||
+        Object.keys(check.expect).length === 0
+      ) {
+        throw new Error(
+          `React assertion "requestBody" must include an "expect" object with the expected JSON body (e.g., { "name": "Bob" }).`
+        );
+      }
+      break;
+
+    case "hasNoText":
+    case "hasItem":
+    case "missingItem":
+      if (typeof check.text !== "string" || !check.text) {
+        throw new Error(
+          `React assertion "${check.subtype}" must include "text" (the item text to verify).`
         );
       }
       break;
@@ -476,14 +520,87 @@ function validateReactExpect(check) {
     (expected.text !== undefined ||
       expected.value !== undefined ||
       expected.checked !== undefined);
-  const hasTextRule = expected.text !== undefined;
+  const hasTextRule =
+    expected.text !== undefined ||
+    expected.hasNoText !== undefined ||
+    expected.hasItem !== undefined ||
+    expected.missingItem !== undefined;
   const isAsyncState =
     expected.loading === true ||
     expected.empty === true ||
     expected.error === true;
   if (!hasSelectorRule && !hasTextRule && !isAsyncState) {
     throw new Error(
-      `React assertion "${check.subtype}" "expect" must include "text" (or "selector" with "text"/"value"/"checked").`
+      `React assertion "${check.subtype}" "expect" must include "text" (or "selector" with "text"/"value"/"checked", or "hasNoText"/"hasItem"/"missingItem").`
+    );
+  }
+}
+
+const SUPPORTED_FETCH_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
+const FETCH_SCENARIOS = new Set(["success", "error", "empty", "loading"]);
+
+/**
+ * Validates a fetch mock route table (v1.3.2).
+ *
+ * Keys may be plain URLs ("/api/users") or method-prefixed
+ * ("POST /api/users"). Each mock must be an object whose optional
+ * "status" is a number and optional "scenario" is a known scenario.
+ */
+function validateFetchRoutes(routes) {
+  for (const [key, mock] of Object.entries(routes)) {
+    if (typeof key !== "string" || !key.trim()) {
+      throw new Error(
+        `Fetch mock route keys must be non-empty strings (e.g., "/api/users" or "POST /api/users").`
+      );
+    }
+    const methodPrefix = /^([A-Za-z]+)\s+(.+)$/.exec(key);
+    if (methodPrefix && !SUPPORTED_FETCH_METHODS.has(methodPrefix[1].toUpperCase())) {
+      throw new Error(
+        `Fetch mock route "${key}" uses an unsupported HTTP method. Supported methods: ${[...SUPPORTED_FETCH_METHODS].join(", ")}.`
+      );
+    }
+    if (!mock || typeof mock !== "object") {
+      throw new Error(
+        `Fetch mock route "${key}" must map to an object (e.g., { "status": 201, "body": [...] }).`
+      );
+    }
+    if (mock.status !== undefined && typeof mock.status !== "number") {
+      throw new Error(
+        `Fetch mock route "${key}" has an invalid "status": expected a number, got ${JSON.stringify(mock.status)}.`
+      );
+    }
+    if (mock.scenario !== undefined && !FETCH_SCENARIOS.has(mock.scenario)) {
+      throw new Error(
+        `Fetch mock route "${key}" has an invalid "scenario": must be one of ${[...FETCH_SCENARIOS].join(", ")}, got "${mock.scenario}".`
+      );
+    }
+  }
+}
+
+/**
+ * Validates the "method" assertion's expect object.
+ */
+function validateMethodExpect(check) {
+  const { expect: expected } = check;
+  if (!expected || typeof expected !== "object") {
+    throw new Error(
+      `React assertion "method" must include an "expect" object with "method" and "url" (e.g., { "method": "POST", "url": "/users" }).`
+    );
+  }
+  if (typeof expected.method !== "string" || !expected.method) {
+    throw new Error(
+      `React assertion "method" "expect" must include "method" (e.g., "POST").`
+    );
+  }
+  const method = expected.method.toUpperCase();
+  if (!SUPPORTED_FETCH_METHODS.has(method)) {
+    throw new Error(
+      `React assertion "method" "expect" "method" must be one of ${[...SUPPORTED_FETCH_METHODS].join(", ")}, got "${expected.method}".`
+    );
+  }
+  if (typeof expected.url !== "string" || !expected.url) {
+    throw new Error(
+      `React assertion "method" "expect" must include "url" (e.g., "/users").`
     );
   }
 }

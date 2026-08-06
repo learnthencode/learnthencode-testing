@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "lesson": "09-react-crud",
+  "lab": "react-crud-users-app",
+  "requirements": [
+    {
+      "id": "react-crud-001",
+      "name": "App renders JSX",
+      "description": "The Users component renders JSX instead of a plain string.",
+      "points": 5,
+      "hint": "Return a JSX element from the component, e.g. <div>...</div>.",
+      "check": {
+        "type": "react",
+        "subtype": "renders",
+        "component": "src/App.jsx"
+      }
+    },
+    {
+      "id": "react-crud-002",
+      "name": "App shows a heading",
+      "description": "The app renders a heading with the text \"Users\".",
+      "points": 5,
+      "hint": "Add <h1>Users</h1> to the rendered output.",
+      "check": {
+        "type": "react",
+        "subtype": "hasHeading",
+        "component": "src/App.jsx",
+        "expect": { "text": "Users" }
+      }
+    },
+    {
+      "id": "react-crud-003",
+      "name": "Users load on mount",
+      "description": "The component fetches /api/users when it mounts and renders the returned names.",
+      "points": 10,
+      "hint": "Call fetch('/api/users') inside a useEffect with an empty dependency array and render the response.",
+      "check": {
+        "type": "react",
+        "subtype": "loadsOnMount",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "expect": { "text": "Alice" }
+      }
+    },
+    {
+      "id": "react-crud-004",
+      "name": "List contains Alice",
+      "description": "The rendered list contains the item \"Alice\".",
+      "points": 5,
+      "hint": "Map over the fetched users and render one list item per user.",
+      "check": {
+        "type": "react",
+        "subtype": "hasItem",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "text": "Alice"
+      }
+    },
+    {
+      "id": "react-crud-005",
+      "name": "List does not contain an unreturned user",
+      "description": "A user that the API never returns must not appear in the list.",
+      "points": 5,
+      "hint": "Only render users returned by the API — never hard-code them.",
+      "check": {
+        "type": "react",
+        "subtype": "missingItem",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "text": "Nobody here"
+      }
+    },
+    {
+      "id": "react-crud-006",
+      "name": "Loading indicator disappears",
+      "description": "Once the users have loaded, the \"Loading...\" text is no longer rendered.",
+      "points": 5,
+      "hint": "Keep a loading state and switch from the loading text to the list after the fetch resolves.",
+      "check": {
+        "type": "react",
+        "subtype": "hasNoText",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "text": "Loading..."
+      }
+    },
+    {
+      "id": "react-crud-007",
+      "name": "Fetch mock serves the right data",
+      "description": "The mocked GET /api/users route returns the declared body.",
+      "points": 5,
+      "hint": "The fetch assertion mocks the declared routes; the component must fetch /api/users with GET.",
+      "check": {
+        "type": "react",
+        "subtype": "fetch",
+        "component": "src/App.jsx",
+        "fetch": {
+          "GET /api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          }
+        },
+        "expect": { "text": "Bob" }
+      }
+    },
+    {
+      "id": "react-crud-008",
+      "name": "Creating a user uses the POST method",
+      "description": "Submitting the create form sends a POST request to /api/users.",
+      "points": 10,
+      "hint": "Call fetch('/api/users', { method: 'POST', ... }) in the form's submit handler.",
+      "check": {
+        "type": "react",
+        "subtype": "method",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } }
+        },
+        "values": { "#name": "Carol" },
+        "expect": { "method": "POST", "url": "/api/users" }
+      }
+    },
+    {
+      "id": "react-crud-009",
+      "name": "Creating a user sends the right body",
+      "description": "The create request body contains the typed name.",
+      "points": 10,
+      "hint": "Send JSON.stringify({ name }) with a Content-Type of application/json.",
+      "check": {
+        "type": "react",
+        "subtype": "requestBody",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } }
+        },
+        "values": { "#name": "Carol" },
+        "expect": { "name": "Carol" }
+      }
+    },
+    {
+      "id": "react-crud-010",
+      "name": "Creating a user updates the UI",
+      "description": "After submitting the create form, the new user appears and the input clears.",
+      "points": 10,
+      "hint": "Append the created user to the list in state and reset the name input.",
+      "check": {
+        "type": "react",
+        "subtype": "submit",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } }
+        },
+        "values": { "#name": "Carol" },
+        "expect": { "text": "Carol", "selector": "#name", "value": "" }
+      }
+    },
+    {
+      "id": "react-crud-011",
+      "name": "Updating a user sends a PUT request",
+      "description": "Clicking Edit and saving a new name sends a PUT request to /api/users/1.",
+      "points": 10,
+      "hint": "Track the editing user in state and fetch `/api/users/${editingId}` with method PUT.",
+      "check": {
+        "type": "react",
+        "subtype": "method",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "PUT /api/users/1": { "status": 200, "body": { "id": 1, "name": "Alicia" } }
+        },
+        "selector": "[data-action='edit']",
+        "values": { "#edit-name": "Alicia" },
+        "expect": { "method": "PUT", "url": "/api/users/1" }
+      }
+    },
+    {
+      "id": "react-crud-012",
+      "name": "Updating a user replaces the name in the UI",
+      "description": "After saving an edit, the old name is gone and the new name is shown.",
+      "points": 10,
+      "hint": "Replace the edited user in the list with the response object.",
+      "check": {
+        "type": "react",
+        "subtype": "click",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "PUT /api/users/1": { "status": 200, "body": { "id": 1, "name": "Alicia" } }
+        },
+        "selector": "[data-action='edit']",
+        "values": { "#edit-name": "Alicia" },
+        "expect": { "hasNoText": "Alice", "hasItem": "Alicia" }
+      }
+    },
+    {
+      "id": "react-crud-013",
+      "name": "Deleting a user sends a DELETE request",
+      "description": "Clicking Delete sends a DELETE request to /api/users/1.",
+      "points": 10,
+      "hint": "Call fetch(`/api/users/${id}`, { method: 'DELETE' }) in the delete handler.",
+      "check": {
+        "type": "react",
+        "subtype": "method",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "DELETE /api/users/1": { "status": 200, "body": {} }
+        },
+        "selector": "[data-action='delete']",
+        "expect": { "method": "DELETE", "url": "/api/users/1" }
+      }
+    },
+    {
+      "id": "react-crud-014",
+      "name": "Deleting a user removes the item",
+      "description": "After clicking Delete, the removed user is no longer in the list.",
+      "points": 10,
+      "hint": "Filter the removed user out of the list in state.",
+      "check": {
+        "type": "react",
+        "subtype": "click",
+        "component": "src/App.jsx",
+        "fetch": {
+          "/api/users": {
+            "body": [
+              { "id": 1, "name": "Alice" },
+              { "id": 2, "name": "Bob" }
+            ]
+          },
+          "DELETE /api/users/1": { "status": 200, "body": {} }
+        },
+        "selector": "[data-action='delete']",
+        "expect": { "missingItem": "Alice" }
+      }
+    },
+    {
+      "id": "react-crud-015",
+      "name": "Project depends on React",
+      "description": "The lab declares react and react-dom in its package.json dependencies.",
+      "points": 5,
+      "hint": "Add react and react-dom to the dependencies in package.json.",
+      "check": {
+        "type": "react",
+        "subtype": "dependency",
+        "dependencies": ["react", "react-dom"]
+      }
+    },
+    {
+      "id": "react-crud-016",
+      "name": "Users component exists",
+      "description": "The lab includes src/App.jsx exporting a function component.",
+      "points": 5,
+      "hint": "Create src/App.jsx exporting a function component as default.",
+      "check": {
+        "type": "react",
+        "subtype": "component",
+        "component": "src/App.jsx"
+      }
+    }
+  ]
+}

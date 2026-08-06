@@ -2,6 +2,7 @@ import { expect } from "../expect.js";
 import { flushAsync } from "./render.js";
 import { act } from "./environment.js";
 import { verifyExpect } from "./interactions.js";
+import { fetchCallMatches } from "./fetch.js";
 
 /**
  * useEffect / async behavior assertions (v1.3.0).
@@ -93,19 +94,19 @@ export async function loadsOnMountAssertion(engine, requirement) {
   }
 
   if (check.fetch) {
-    for (const url of Object.keys(check.fetch)) {
-      if (url === "*") {
+    for (const key of Object.keys(check.fetch)) {
+      if (key === "*") {
         // A catch-all matches any URL the component may call; behavior
         // is verified through the expect checks below.
         continue;
       }
-      const called = engine.fetchCalls.some(
-        (call) => call.url === url || call.url.includes(url)
+      const called = engine.fetchCalls.some((call) =>
+        fetchCallMatches(call, key)
       );
       if (!called) {
         return fail(
           requirement,
-          `Expected the component to fetch "${url}" when it mounts (useEffect with []), but no fetch call to that URL was made.`
+          `Expected the component to fetch "${key}" when it mounts (useEffect with []), but no fetch call to that URL was made.`
         );
       }
     }

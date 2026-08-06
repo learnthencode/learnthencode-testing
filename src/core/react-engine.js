@@ -169,13 +169,14 @@ export function createReactEngine({ labDirectory, entry }) {
     },
     fetch: async (url, options = {}) => {
       const urlString = typeof url === "string" ? url : String(url);
+      const method = (options.method || "GET").toUpperCase();
       fetchCalls.push({
         url: urlString,
-        method: (options.method || "GET").toUpperCase(),
+        method,
         headers: options.headers ? { ...options.headers } : {},
         body: options.body || null,
       });
-      const mock = resolveFetchMock(fetchMocks, urlString);
+      const mock = resolveFetchMock(fetchMocks, urlString, method);
       return createFetchResponse(mock);
     },
     Object,
@@ -462,7 +463,8 @@ export function createReactEngine({ labDirectory, entry }) {
     },
 
     // -----------------------------------------------------------------------
-    // Fetch mocking (used by effect and fetch assertions).
+    // Fetch mocking (used by effect, fetch, and CRUD assertions; mock
+    // routes may carry HTTP method prefixes since v1.3.2).
     // -----------------------------------------------------------------------
 
     setFetchMocks(mocks) {

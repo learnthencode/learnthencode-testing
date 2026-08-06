@@ -85,7 +85,7 @@ learnthencode-test --version
 ```
 ========================================
  LearnThenCode Testing Framework
- Version 1.3.1
+ Version 1.3.2
 ========================================
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1165,7 +1165,7 @@ Common `expect` shapes:
 }
 ```
 
-Mock routes are matched exactly, then by longest substring; a `"*"` key is the catch-all. Scenarios: `success` (default, serves `body`), `error` (`ok: false`, 500), `empty` (`json()` resolves to `[]`), and `loading` (never settles). `expect` supports `text`, `loading`, `empty`, and `error`. Unmatched URLs resolve to a successful empty response so components render their fallback state.
+Mock routes are matched exactly, then by longest substring; a `"*"` key is the catch-all. Since v1.3.2 a route key may be prefixed with an HTTP method (`"POST /api/users"`) to restrict it to that method; method-prefixed routes take precedence over plain URL keys. Scenarios: `success` (default, serves `body`), `error` (`ok: false`, 500), `empty` (`json()` resolves to `[]`), and `loading` (never settles). `expect` supports `text`, `loading`, `empty`, and `error`. Unmatched URLs resolve to a successful empty response so components render their fallback state. See [React CRUD Assertions (v1.3.2)](#react-crud-assertions-v132) for the full CRUD workflow.
 
 #### Other Subtypes
 
@@ -1392,6 +1392,137 @@ The v1.3.1 example lab in [`examples/react/`](./examples/react) demonstrates eve
 
 ---
 
+### React CRUD Assertions (v1.3.2)
+
+v1.3.2 extends the React engine with **CRUD** support for the React API labs: mocking create/read/update/delete requests, asserting that the app used the right HTTP method and request body, and verifying list content (including removed items) after interactions.
+
+A runnable example lab lives in [`examples/react-crud/`](./examples/react-crud) — a users app with load, create, edit, and delete flows (16 requirements, 120 points, all passing).
+
+#### List Content Assertions
+
+- `hasItem` — the rendered list contains the given text.
+- `missingItem` — the rendered list does not contain the given text.
+- `hasNoText` — the given text is not rendered anywhere in the component.
+
+All three accept `component`, `fetch` mocks (installed before render), and a `text` value:
+
+```json
+{
+  "id": "react-crud-004",
+  "name": "List contains Alice",
+  "points": 5,
+  "check": {
+    "type": "react",
+    "subtype": "hasItem",
+    "component": "src/App.jsx",
+    "fetch": {
+      "/api/users": {
+        "body": [
+          { "id": 1, "name": "Alice" },
+          { "id": 2, "name": "Bob" }
+        ]
+      }
+    },
+    "text": "Alice"
+  }
+}
+```
+
+`missingItem` and `hasNoText` pass when the text is absent; `hasItem` passes when it is present. All three evaluate after the fetch mocks settle, so loading indicators (`hasNoText: "Loading..."`) and post-fetch lists (`hasItem` / `missingItem`) are verified against the final render.
+
+#### Method Verification
+
+`method` asserts that a request was sent with a specific HTTP method and URL. The request can be triggered with `values` (fills the form fields and submits the form) and/or `selector` (clicks the first matching element, e.g. an edit or delete button):
+
+```json
+{
+  "id": "react-crud-008",
+  "name": "Creating a user uses the POST method",
+  "points": 10,
+  "check": {
+    "type": "react",
+    "subtype": "method",
+    "component": "src/App.jsx",
+    "fetch": {
+      "/api/users": { "body": [{ "id": 1, "name": "Alice" }] },
+      "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } }
+    },
+    "values": { "#name": "Carol" },
+    "expect": { "method": "POST", "url": "/api/users" }
+  }
+}
+```
+
+**Validation rules:** `expect.method` is required and must be one of `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`; `expect.url` is required.
+
+#### Request Body Verification
+
+`requestBody` asserts the exact request body of the triggered request (deep equality on the parsed JSON):
+
+```json
+{
+  "id": "react-crud-009",
+  "name": "Creating a user sends the right body",
+  "points": 10,
+  "check": {
+    "type": "react",
+    "subtype": "requestBody",
+    "component": "src/App.jsx",
+    "fetch": {
+      "/api/users": { "body": [{ "id": 1, "name": "Alice" }] },
+      "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } }
+    },
+    "values": { "#name": "Carol" },
+    "expect": { "name": "Carol" }
+  }
+}
+```
+
+**Validation rules:** `expect` must be a non-empty object.
+
+#### CRUD Mock Routes
+
+Route keys may be prefixed with an HTTP method to serve that method only:
+
+```json
+"fetch": {
+  "/api/users": { "body": [...] },
+  "POST /api/users": { "status": 201, "body": { "id": 3, "name": "Carol" } },
+  "PUT /api/users/1": { "status": 200, "body": { "id": 1, "name": "Alicia" } },
+  "DELETE /api/users/1": { "status": 200, "body": {} }
+}
+```
+
+Matching order: method-prefixed routes for the request method (longest URL substring first), then exact plain URL keys, then longest plain substring, then `"*"`. Unknown method prefixes (e.g. `HEAD`) are rejected at validation time.
+
+#### Multiple Expectations in Interactions
+
+`click` and `submit` accept multiple expectations, evaluated against the whole rendered container after the interaction settles:
+
+```json
+{
+  "id": "react-crud-012",
+  "name": "Updating a user replaces the name in the UI",
+  "points": 10,
+  "check": {
+    "type": "react",
+    "subtype": "click",
+    "component": "src/App.jsx",
+    "fetch": {
+      "/api/users": { "body": [{ "id": 1, "name": "Alice" }] },
+      "PUT /api/users/1": { "status": 200, "body": { "id": 1, "name": "Alicia" } }
+    },
+    "selector": "[data-action='edit']",
+    "values": { "#edit-name": "Alicia" },
+    "expect": { "hasNoText": "Alice", "hasItem": "Alicia" }
+  }
+}
+```
+
+Supported expectation rules: `hasNoText` (text absent), `missingItem` (item absent), `text` (present anywhere), `hasItem` (item present), `selector` + `value` (input value), `selector` + `checked` (checkbox state), and `selector` + `text` (legacy exact match). All interaction subtypes — `click`, `type`, `change`, `select`, `submit`, `reset` — accept `fetch` mocks and wait for pending requests to settle after the interaction, so UI updates driven by `POST`/`PUT`/`DELETE` responses are reflected before expectations are evaluated.
+
+---
+
 ## Project Structure
 
 ```
@@ -1400,21 +1531,21 @@ learnthencode-testing/
 │   └── learnthencode-test.js   ← CLI entry point
 ├── src/
 │   ├── assertions/             ← Built-in assertion types
-│   │   ├── react/              ← React component assertions (v1.3.0, source analysis v1.3.1)
+│   │   ├── react/              ← React component assertions (v1.3.0, source analysis v1.3.1, CRUD v1.3.2)
 │   │   │   ├── index.js        ← reactAssertions map + programmatic API
 │   │   │   ├── ast.js          ← @babel/parser AST helpers (v1.3.1)
 │   │   │   ├── ast-assertions.js ← effect/dependencyArray/cleanup/customHook/imports/fileExists/folderExists/route/routeParam/navLink (v1.3.1)
-│   │   │   ├── render-assertions.js
-│   │   │   ├── interactions.js
+│   │   │   ├── render-assertions.js ← renders/hasHeading/... + hasItem/missingItem/hasNoText (v1.3.2)
+│   │   │   ├── interactions.js ← multi-expectation interactions + fetch mocks (v1.3.2)
 │   │   │   ├── effects.js
-│   │   │   ├── fetch-assertions.js
+│   │   │   ├── fetch-assertions.js ← fetch/method/requestBody (v1.3.2)
 │   │   │   ├── router-assertions.js
 │   │   │   ├── static.js
 │   │   │   ├── environment.js ← shared jsdom environment
 │   │   │   ├── render.js
 │   │   │   ├── queries.js
 │   │   │   ├── fire.js         ← user interaction helpers
-│   │   │   ├── fetch.js        ← fetch mocking
+│   │   │   ├── fetch.js        ← method-aware fetch mocking (v1.3.2)
 │   │   │   ├── router.js
 │   │   │   └── expect.js
 │   │   ├── javascript/         ← JavaScript assertions (v1.2.1)

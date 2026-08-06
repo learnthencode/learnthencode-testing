@@ -1,0 +1,10 @@
+{
+  "id": "react-crud-users-app",
+  "title": "React CRUD Users App",
+  "language": "javascript",
+  "entry": "src/App.jsx",
+  "provider": "local",
+  "tests": "./private-tests",
+  "lesson": "lesson-09",
+  "version": "1.0.0"
+}

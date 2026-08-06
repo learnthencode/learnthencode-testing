@@ -9,6 +9,9 @@ import {
   propsAssertion,
   stateAssertion,
   hasTextAssertion,
+  hasNoTextAssertion,
+  hasItemAssertion,
+  missingItemAssertion,
   elementAssertion,
   roleAssertion,
   labelAssertion,
@@ -32,7 +35,11 @@ import {
   verifyExpect,
 } from "./interactions.js";
 import { loadsOnMountAssertion, asyncAssertion } from "./effects.js";
-import { fetchAssertion } from "./fetch-assertions.js";
+import {
+  fetchAssertion,
+  methodAssertion,
+  requestBodyAssertion,
+} from "./fetch-assertions.js";
 import { routerAssertion } from "./router-assertions.js";
 import {
   effectAssertion,
@@ -48,8 +55,8 @@ import {
 } from "./ast-assertions.js";
 
 /**
- * All React assertion functions (v1.3.1), keyed by requirement check
- * subtype. Every function has the signature:
+ * All React assertion functions (v1.3.1, CRUD assertions v1.3.2), keyed
+ * by requirement check subtype. Every function has the signature:
  *
  *   async (engine, requirement) => result
  *
@@ -65,6 +72,9 @@ export const reactAssertions = {
   props: propsAssertion,
   state: stateAssertion,
   hasText: hasTextAssertion,
+  hasNoText: hasNoTextAssertion,
+  hasItem: hasItemAssertion,
+  missingItem: missingItemAssertion,
   hasElement: elementAssertion,
   hasRole: roleAssertion,
   hasLabel: labelAssertion,
@@ -88,6 +98,8 @@ export const reactAssertions = {
   loadsOnMount: loadsOnMountAssertion,
   async: asyncAssertion,
   fetch: fetchAssertion,
+  method: methodAssertion,
+  requestBody: requestBodyAssertion,
   router: routerAssertion,
 
   effect: effectAssertion,
